@@ -27,6 +27,7 @@ int find_wheels(struct hidraw_device *hidraw_devices, int buffer_size){
 			if((int16_t)cur->product_id == (int16_t)supported_ids[i]){
 				hidraw_devices[wheels_found].vendor_id = (uint16_t)cur->vendor_id;
 				hidraw_devices[wheels_found].product_id = (uint16_t)cur->product_id;
+				strcpy(hidraw_devices[wheels_found].backend_path, cur->path);
 				wcstombs(hidraw_devices[wheels_found].name_buf, cur->product_string, 256);
 				hidraw_devices[wheels_found].name_buf[255] = '\0';
 				wheels_found++;
