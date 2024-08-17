@@ -6,6 +6,7 @@
 
 #include "logging.h"
 #include "probe.h"
+#include "driver_loops.h"
 
 static void list_devices(struct hidraw_device *hidraw_devices, int entries){
 	for(int i = 0;i < entries; i++){
@@ -59,6 +60,7 @@ static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("rebooting wheel %d to %s\n", wheel_num, get_wheel_mode_name(target_mode));
 	STDERR("wheel reboot is not implemented\n");
 	exit(1);
+	return 0;
 }
 
 static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level){
@@ -70,8 +72,12 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("damper level: %d\n", damper_level);
 	STDOUT("friction level: %d\n", friction_level);
 
-	STDERR("the driver is not implemented\n");
-	exit(1);
+	struct loop_context lc = {
+		.device = hidraw_devices[wheel_num - 1]
+	};
+	start_loops(lc);
+
+	return 0;
 }
 
 int main(int argc, char** argv){

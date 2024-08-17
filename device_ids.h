@@ -14,4 +14,6 @@ static int supported_ids[] = {
 	USB_DEVICE_ID_LOGITECH_WHEEL
 };
 
+const char *get_name_by_product_id(int id);
+
 #endif
