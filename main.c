@@ -7,6 +7,8 @@
 #include "logging.h"
 #include "probe.h"
 #include "driver_loops.h"
+#include "switch_mode.h"
+#include "device_ids.h"
 
 static void list_devices(struct hidraw_device *hidraw_devices, int entries){
 	for(int i = 0;i < entries; i++){
@@ -22,7 +24,7 @@ static void print_help(char *binary_name){
 	STDOUT("usage: %s <options>\n", binary_name);
 	STDOUT("listing devices: -l\n");
 	STDOUT("display this message: -h\n");
-	STDOUT("reboot wheel into another mode: -m <df/g25/g27/g29> -n <device number in -l>\n");
+	STDOUT("reboot wheel into another mode: -m <g25/g27/g29> -n <device number in -l>\n");
 	STDOUT("start driver on wheel: -w -n <device number in -l> [-g <gain, 0-65535>] [-a <auto center, 0-65535>] [-s <spring level, 0-100>] [-d <damper level>] [-f <friction level>]\n")
 }
 
@@ -32,16 +34,13 @@ enum operation_mode{
 };
 
 enum wheel_mode{
-	WHEEL_MODE_DF = 0,
-	WHEEL_MODE_G25,
+	WHEEL_MODE_G25 = 0,
 	WHEEL_MODE_G27,
 	WHEEL_MODE_G29
 };
 
 static const char *get_wheel_mode_name(int mode){
 	switch(mode){
-		case WHEEL_MODE_DF:
-			return "Drive Force";
 		case WHEEL_MODE_G25:
 			return "G25";
 		case WHEEL_MODE_G27:
@@ -55,11 +54,24 @@ static const char *get_wheel_mode_name(int mode){
 	return NULL;
 }
 
+static const uint16_t get_wheel_mode_product_id(int mode){
+	switch(mode){
+		case WHEEL_MODE_G25:
+			return USB_DEVICE_ID_LOGITECH_G25_WHEEL;
+		case WHEEL_MODE_G27:
+			return USB_DEVICE_ID_LOGITECH_G27_WHEEL;
+		case WHEEL_MODE_G29:
+			return USB_DEVICE_ID_LOGITECH_G29_WHEEL;
+	}
+	STDERR("unknown wheel mode %d\n", mode);
+	exit(1);
+	return 0;
+}
+
 static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int target_mode){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("rebooting wheel %d to %s\n", wheel_num, get_wheel_mode_name(target_mode));
-	STDERR("wheel reboot is not implemented\n");
-	exit(1);
+	switch_mode(hidraw_devices[wheel_num - 1], get_wheel_mode_product_id(target_mode));
 	return 0;
 }
 
@@ -107,9 +119,7 @@ int main(int argc, char** argv){
 				break;
 			case 'm':
 				mode = OPERATION_MODE_REBOOT;
-				if(strcmp(optarg, "df") == 0){
-					wmode = WHEEL_MODE_DF;
-				}else if(strcmp(optarg, "g25") == 0){
+				if(strcmp(optarg, "g25") == 0){
 					wmode = WHEEL_MODE_G25;
 				}else if(strcmp(optarg, "g27") == 0){
 					wmode = WHEEL_MODE_G27;
