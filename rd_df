@@ -1,0 +1,80 @@
+# device 0:0
+# 0x05, 0x01,                    // Usage Page (Generic Desktop)        0
+# 0x09, 0x05,                    // Usage (Game Pad)                    2
+# 0xa1, 0x01,                    // Collection (Application)            4
+# 0xa1, 0x02,                    //  Collection (Logical)               6
+# 0x15, 0x00,                    //   Logical Minimum (0)               8
+# 0x25, 0x01,                    //   Logical Maximum (1)               10
+# 0x35, 0x00,                    //   Physical Minimum (0)              12
+# 0x45, 0x01,                    //   Physical Maximum (1)              14
+# 0x75, 0x01,                    //   Report Size (1)                   16
+# 0x95, 0x0d,                    //   Report Count (13)                 18
+# 0x05, 0x09,                    //   Usage Page (Button)               20
+# 0x19, 0x01,                    //   Usage Minimum (1)                 22
+# 0x29, 0x0d,                    //   Usage Maximum (13)                24
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              26
+# 0x95, 0x03,                    //   Report Count (3)                  28
+# 0x81, 0x01,                    //   Input (Cnst,Arr,Abs)              30
+# 0x05, 0x01,                    //   Usage Page (Generic Desktop)      32
+# 0x25, 0x07,                    //   Logical Maximum (7)               34
+# 0x46, 0x3b, 0x01,              //   Physical Maximum (315)            36
+# 0x75, 0x04,                    //   Report Size (4)                   39
+# 0x95, 0x01,                    //   Report Count (1)                  41
+# 0x65, 0x14,                    //   Unit (EnglishRotation: deg)       43
+# 0x09, 0x39,                    //   Usage (Hat switch)                45
+# 0x81, 0x42,                    //   Input (Data,Var,Abs,Null)         47
+# 0x65, 0x00,                    //   Unit (None)                       49
+# 0x95, 0x01,                    //   Report Count (1)                  51
+# 0x81, 0x01,                    //   Input (Cnst,Arr,Abs)              53
+# 0x26, 0xff, 0x00,              //   Logical Maximum (255)             55
+# 0x46, 0xff, 0x00,              //   Physical Maximum (255)            58
+# 0x09, 0x30,                    //   Usage (X)                         61
+# 0x09, 0x31,                    //   Usage (Y)                         63
+# 0x09, 0x32,                    //   Usage (Z)                         65
+# 0x09, 0x35,                    //   Usage (Rz)                        67
+# 0x75, 0x08,                    //   Report Size (8)                   69
+# 0x95, 0x04,                    //   Report Count (4)                  71
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              73
+# 0x06, 0x00, 0xff,              //   Usage Page (Vendor Defined Page 1) 75
+# 0x09, 0x20,                    //   Usage (Vendor Usage 0x20)         78
+# 0x09, 0x21,                    //   Usage (Vendor Usage 0x21)         80
+# 0x09, 0x22,                    //   Usage (Vendor Usage 0x22)         82
+# 0x09, 0x23,                    //   Usage (Vendor Usage 0x23)         84
+# 0x09, 0x24,                    //   Usage (Vendor Usage 0x24)         86
+# 0x09, 0x25,                    //   Usage (Vendor Usage 0x25)         88
+# 0x09, 0x26,                    //   Usage (Vendor Usage 0x26)         90
+# 0x09, 0x27,                    //   Usage (Vendor Usage 0x27)         92
+# 0x09, 0x28,                    //   Usage (Vendor Usage 0x28)         94
+# 0x09, 0x29,                    //   Usage (Vendor Usage 0x29)         96
+# 0x09, 0x2a,                    //   Usage (Vendor Usage 0x2a)         98
+# 0x09, 0x2b,                    //   Usage (Vendor Usage 0x2b)         100
+# 0x95, 0x0c,                    //   Report Count (12)                 102
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              104
+# 0x0a, 0x21, 0x26,              //   Usage (Vendor Usage 0x2621)       106
+# 0x95, 0x08,                    //   Report Count (8)                  109
+# 0xb1, 0x02,                    //   Feature (Data,Var,Abs)            111
+# 0x0a, 0x21, 0x26,              //   Usage (Vendor Usage 0x2621)       113
+# 0x91, 0x02,                    //   Output (Data,Var,Abs)             116
+# 0x26, 0xff, 0x03,              //   Logical Maximum (1023)            118
+# 0x46, 0xff, 0x03,              //   Physical Maximum (1023)           121
+# 0x09, 0x2c,                    //   Usage (Vendor Usage 0x2c)         124
+# 0x09, 0x2d,                    //   Usage (Vendor Usage 0x2d)         126
+# 0x09, 0x2e,                    //   Usage (Vendor Usage 0x2e)         128
+# 0x09, 0x2f,                    //   Usage (Vendor Usage 0x2f)         130
+# 0x75, 0x10,                    //   Report Size (16)                  132
+# 0x95, 0x04,                    //   Report Count (4)                  134
+# 0x81, 0x02,                    //   Input (Data,Var,Abs)              136
+# 0xc0,                          //  End Collection                     138
+# 0xa1, 0x02,                    //  Collection (Logical)               139
+# 0x26, 0xff, 0x00,              //   Logical Maximum (255)             141
+# 0x46, 0xff, 0x00,              //   Physical Maximum (255)            144
+# 0x95, 0x07,                    //   Report Count (7)                  147
+# 0x75, 0x08,                    //   Report Size (8)                   149
+# 0x09, 0x03,                    //   Usage (Vendor Usage 0x03)         151
+# 0x91, 0x02,                    //   Output (Data,Var,Abs)             153
+# 0xc0,                          //  End Collection                     155
+# 0xc0,                          // End Collection                      156
+# 
+R: 157 05 01 09 05 a1 01 a1 02 15 00 25 01 35 00 45 01 75 01 95 0d 05 09 19 01 29 0d 81 02 95 03 81 01 05 01 25 07 46 3b 01 75 04 95 01 65 14 09 39 81 42 65 00 95 01 81 01 26 ff 00 46 ff 00 09 30 09 31 09 32 09 35 75 08 95 04 81 02 06 00 ff 09 20 09 21 09 22 09 23 09 24 09 25 09 26 09 27 09 28 09 29 09 2a 09 2b 95 0c 81 02 0a 21 26 95 08 b1 02 0a 21 26 91 02 26 ff 03 46 ff 03 09 2c 09 2d 09 2e 09 2f 75 10 95 04 81 02 c0 a1 02 26 ff 00 46 ff 00 95 07 75 08 09 03 91 02 c0 c0
+N: device 0:0
+I: 3 0001 0001

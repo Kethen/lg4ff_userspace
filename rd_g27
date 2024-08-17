@@ -1,0 +1,67 @@
+# device 0:0
+# 0x05, 0x01,                    // Usage Page (Generic Desktop)        0
+# 0x09, 0x04,                    // Usage (Joystick)                    2
+# 0xa1, 0x01,                    // Collection (Application)            4
+# 0x15, 0x00,                    //  Logical Minimum (0)                6
+# 0x25, 0x07,                    //  Logical Maximum (7)                8
+# 0x35, 0x00,                    //  Physical Minimum (0)               10
+# 0x46, 0x3b, 0x01,              //  Physical Maximum (315)             12
+# 0x65, 0x14,                    //  Unit (EnglishRotation: deg)        15
+# 0x09, 0x39,                    //  Usage (Hat switch)                 17
+# 0x75, 0x04,                    //  Report Size (4)                    19
+# 0x95, 0x01,                    //  Report Count (1)                   21
+# 0x81, 0x42,                    //  Input (Data,Var,Abs,Null)          23
+# 0x65, 0x00,                    //  Unit (None)                        25
+# 0x25, 0x01,                    //  Logical Maximum (1)                27
+# 0x45, 0x01,                    //  Physical Maximum (1)               29
+# 0x05, 0x09,                    //  Usage Page (Button)                31
+# 0x19, 0x01,                    //  Usage Minimum (1)                  33
+# 0x29, 0x16,                    //  Usage Maximum (22)                 35
+# 0x75, 0x01,                    //  Report Size (1)                    37
+# 0x95, 0x16,                    //  Report Count (22)                  39
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               41
+# 0x26, 0xff, 0x3f,              //  Logical Maximum (16383)            43
+# 0x46, 0xff, 0x3f,              //  Physical Maximum (16383)           46
+# 0x75, 0x0e,                    //  Report Size (14)                   49
+# 0x95, 0x01,                    //  Report Count (1)                   51
+# 0x05, 0x01,                    //  Usage Page (Generic Desktop)       53
+# 0x09, 0x30,                    //  Usage (X)                          55
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               57
+# 0x26, 0xff, 0x00,              //  Logical Maximum (255)              59
+# 0x46, 0xff, 0x00,              //  Physical Maximum (255)             62
+# 0x75, 0x08,                    //  Report Size (8)                    65
+# 0x95, 0x03,                    //  Report Count (3)                   67
+# 0x09, 0x32,                    //  Usage (Z)                          69
+# 0x09, 0x35,                    //  Usage (Rz)                         71
+# 0x09, 0x31,                    //  Usage (Y)                          73
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               75
+# 0x06, 0x00, 0xff,              //  Usage Page (Vendor Defined Page 1) 77
+# 0x09, 0x01,                    //  Usage (Vendor Usage 1)             80
+# 0x95, 0x02,                    //  Report Count (2)                   82
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               84
+# 0x95, 0x01,                    //  Report Count (1)                   86
+# 0x75, 0x01,                    //  Report Size (1)                    88
+# 0x25, 0x01,                    //  Logical Maximum (1)                90
+# 0x45, 0x01,                    //  Physical Maximum (1)               92
+# 0x05, 0x09,                    //  Usage Page (Button)                94
+# 0x09, 0x17,                    //  Usage (Vendor Usage 0x17)          96
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               98
+# 0x06, 0x00, 0xff,              //  Usage Page (Vendor Defined Page 1) 100
+# 0x09, 0x01,                    //  Usage (Vendor Usage 1)             103
+# 0x95, 0x07,                    //  Report Count (7)                   105
+# 0x81, 0x02,                    //  Input (Data,Var,Abs)               107
+# 0x26, 0xff, 0x00,              //  Logical Maximum (255)              109
+# 0x46, 0xff, 0x00,              //  Physical Maximum (255)             112
+# 0x06, 0x00, 0xff,              //  Usage Page (Vendor Defined Page 1) 115
+# 0x09, 0x02,                    //  Usage (Vendor Usage 2)             118
+# 0x95, 0x07,                    //  Report Count (7)                   120
+# 0x75, 0x08,                    //  Report Size (8)                    122
+# 0x91, 0x02,                    //  Output (Data,Var,Abs)              124
+# 0x95, 0x90,                    //  Report Count (144)                 126
+# 0x09, 0x03,                    //  Usage (Vendor Usage 0x03)          128
+# 0xb1, 0x02,                    //  Feature (Data,Var,Abs)             130
+# 0xc0,                          // End Collection                      132
+# 
+R: 133 05 01 09 04 a1 01 15 00 25 07 35 00 46 3b 01 65 14 09 39 75 04 95 01 81 42 65 00 25 01 45 01 05 09 19 01 29 16 75 01 95 16 81 02 26 ff 3f 46 ff 3f 75 0e 95 01 05 01 09 30 81 02 26 ff 00 46 ff 00 75 08 95 03 09 32 09 35 09 31 81 02 06 00 ff 09 01 95 02 81 02 95 01 75 01 25 01 45 01 05 09 09 17 81 02 06 00 ff 09 01 95 07 81 02 26 ff 00 46 ff 00 06 00 ff 09 02 95 07 75 08 91 02 95 90 09 03 b1 02 c0
+N: device 0:0
+I: 3 0001 0001
