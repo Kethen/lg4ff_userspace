@@ -16,6 +16,7 @@ static void list_devices(struct hidraw_device *hidraw_devices, int entries){
 		STDOUT(" name: %s\n", hidraw_devices[i].name_buf);
 		STDOUT(" vendor id: 0x%04x\n", hidraw_devices[i].vendor_id);
 		STDOUT(" product id: 0x%04x\n", hidraw_devices[i].product_id);
+		STDOUT(" mode: %s\n", get_name_by_product_id(hidraw_devices[i].product_id));
 		STDOUT(" backend path: %s\n", hidraw_devices[i].backend_path);
 	}
 }
@@ -75,7 +76,7 @@ static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wh
 	return 0;
 }
 
-static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level){
+static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
 	STDOUT("gain: %d\n", gain);
@@ -83,9 +84,16 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("spring level: %d\n", spring_level);
 	STDOUT("damper level: %d\n", damper_level);
 	STDOUT("friction level: %d\n", friction_level);
+	STDOUT("range: %d\n", range);
 
 	struct loop_context lc = {
-		.device = hidraw_devices[wheel_num - 1]
+		.device = hidraw_devices[wheel_num - 1],
+		.gain = gain,
+		.auto_center = auto_center,
+		.spring_level = spring_level,
+		.damper_level = damper_level,
+		.friction_level = friction_level,
+		.range = range
 	};
 	start_loops(lc);
 
@@ -110,8 +118,9 @@ int main(int argc, char** argv){
 	int spring_level = 30;
 	int damper_level = 30;
 	int friction_level = 30;
+	int range = 900;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:")) != -1){
 		switch(opt){
 			case 'l':
 				list_devices(hidraw_devices, wheels_found);
@@ -148,6 +157,9 @@ int main(int argc, char** argv){
 			case 'f':
 				friction_level = atoi(optarg);
 				break;
+			case 'r':
+				range = atoi(optarg);
+				break;
 			case 'h':
 			default:
 				print_help(argv[0]);
@@ -171,7 +183,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range);
 			return 0;
 		default:
 			print_help(argv[0]);

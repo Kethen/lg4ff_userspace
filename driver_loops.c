@@ -16,6 +16,7 @@
 #include "device_ids.h"
 #include "driver_loops.h"
 #include "logging.h"
+#include "configure.h"
 
 #define SETUP_KEY(f, k){ \
 	ioctl(f, UI_SET_EVBIT, EV_KEY); \
@@ -72,6 +73,66 @@ static void uinput_g29_setup(int uinput_fd){
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G29_WHEEL;
 	strcpy(usetup.name, "userspace G29");
+
+	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
+	ioctl(uinput_fd, UI_DEV_CREATE);
+}
+
+static void uinput_g27_setup(int uinput_fd){
+	// 22 buttons numerated from 1 to 22 on hid
+	for(int i = 0;i < 22; i++){
+		int key = BTN_TRIGGER_HAPPY + i;
+		SETUP_KEY(uinput_fd, key);
+	}
+
+	// X axis on 0-16383, wine seems to convert them by name during evdev -> hid
+	SETUP_AXIS(uinput_fd, ABS_X, 0, 16383);
+	// Z on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
+	// Y on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+
+	// HAT/dpad
+	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
+	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
+
+	struct uinput_setup usetup = {0};
+	usetup.id.bustype = BUS_USB;
+	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
+	usetup.id.product = USB_DEVICE_ID_LOGITECH_G27_WHEEL;
+	strcpy(usetup.name, "userspace G27");
+
+	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
+	ioctl(uinput_fd, UI_DEV_CREATE);
+}
+
+static void uinput_g25_setup(int uinput_fd){
+	// 22 buttons numerated from 1 to 22 on hid
+	for(int i = 0;i < 19; i++){
+		int key = BTN_TRIGGER_HAPPY + i;
+		SETUP_KEY(uinput_fd, key);
+	}
+
+	// X axis on 0-16383, wine seems to convert them by name during evdev -> hid
+	SETUP_AXIS(uinput_fd, ABS_X, 0, 16383);
+	// Z on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
+	// Y on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+
+	// HAT/dpad
+	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
+	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
+
+	struct uinput_setup usetup = {0};
+	usetup.id.bustype = BUS_USB;
+	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
+	usetup.id.product = USB_DEVICE_ID_LOGITECH_G25_WHEEL;
+	strcpy(usetup.name, "userspace G25");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -168,6 +229,100 @@ static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 	memcpy(last_report_buf, report_buf, 12);
 }
 
+static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf){
+	// 11 byte report
+	// first 4 bits are for the hat
+	// second 22 bits are the buttons (on g25, 19 bits of buttons, 3 bits of vendor)
+	// 14 bits of X
+	// 8 bits of Z
+	// 8 bits of Rz
+	// 8 bits of Y
+	// ... vendor
+
+	uint8_t hat = report_buf[0] & 0x0f;
+	uint8_t last_hat = last_report_buf[0] & 0x0f;
+	if(hat != last_hat){
+		switch(hat){
+			case 0:
+				// up only
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+			case 1:
+				// up and right
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 2:
+				// right only
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 3:
+				// down right
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 4:
+				// down
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+			case 5:
+				// down left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 6:
+				// left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 7:
+				// up left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 8:
+				// center
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+		}
+	}
+	for(int i = 0;i < 22; i++){
+		int key = BTN_TRIGGER_HAPPY + i;
+		int bit_num = i + 4;
+		bool button_on = get_bit(report_buf, bit_num, 12);
+		bool button_was_on = get_bit(last_report_buf, bit_num, 12);
+		if(button_on != button_was_on){
+			EMIT_INPUT(uinput_fd, EV_KEY, key, button_on? 1: 0);
+		}
+	}
+	// why don't they align this, what even is a 14bit uint :(
+	uint16_t x = 0;
+	x = x | report_buf[4] << 6;
+	x = x | report_buf[3] >> 2;
+	uint16_t last_x = 0;
+	last_x = last_x | last_report_buf[4] << 6;
+	last_x = last_x | last_report_buf[3] >> 2;
+	if(x != last_x){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_X, x);
+	}
+	if(report_buf[5] != last_report_buf[5]){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_Z, report_buf[5]);
+	}
+	if(report_buf[6] != last_report_buf[6]){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_RZ, report_buf[6]);
+	}
+	if(report_buf[7] != last_report_buf[7]){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_Y, report_buf[7]);
+	}
+
+	EMIT_INPUT(uinput_fd, EV_SYN, SYN_REPORT, 0);
+	memcpy(last_report_buf, report_buf, 11);
+}
+
 struct input_loop_context{
 	struct loop_context context;
 	hid_device *read_hid_device;
@@ -180,7 +335,7 @@ static void *input_loop(void *arg){
 	uint8_t last_report_buf[32] = {0};
 	while(true){
 		switch(loop_context->context.device.product_id){
-			case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
+			case USB_DEVICE_ID_LOGITECH_G29_WHEEL:{
 				int bytes_read = hid_read(loop_context->read_hid_device, report_buf, 12);
 				if(bytes_read == -1){
 					char error_buf[128];
@@ -188,12 +343,21 @@ static void *input_loop(void *arg){
 					STDERR("failed reading input report from G29, %s\n", error_buf);
 					exit(1);
 				}
-				if(bytes_read != 12){
-					STDERR("failed reading input report from G29, read %d bytes instead of %d\n", bytes_read, 13);
-					exit(1);
-				}
 				uinput_g29_emit(loop_context->uinput_fd, report_buf, last_report_buf);
 				break;
+			}
+			case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
+			case USB_DEVICE_ID_LOGITECH_G25_WHEEL:{
+				int bytes_read = hid_read(loop_context->read_hid_device, report_buf, 11);
+				if(bytes_read == -1){
+					char error_buf[128];
+					wcstombs(error_buf, hid_error(loop_context->read_hid_device), sizeof(error_buf));
+					STDERR("failed reading input report from G27, %s\n", error_buf);
+					exit(1);
+				}
+				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf);
+				break;
+			}
 			default:
 				STDERR("uinput device for %s(0x%04x) is not implemented\n", get_name_by_product_id(loop_context->context.device.product_id), loop_context->context.device.product_id);
 				exit(1);
@@ -227,16 +391,22 @@ void start_loops(struct loop_context context){
 	}
 
 	switch(context.device.product_id){
- 		case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
- 			uinput_g29_setup(uinput_fd);
- 			break;
- 		default:
- 			STDERR("uinput device for %s(0x%04x) is not implemented\n", get_name_by_product_id(context.device.product_id), context.device.product_id);
- 			exit(1);
+		case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
+			uinput_g29_setup(uinput_fd);
+			break;
+		case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
+			uinput_g27_setup(uinput_fd);
+			break;
+		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
+			uinput_g25_setup(uinput_fd);
+			break;
+		default:
+			STDERR("uinput device for %s(0x%04x) is not implemented\n", get_name_by_product_id(context.device.product_id), context.device.product_id);
+			exit(1);
 	}
 
 
-	// TODO setup device from context
+	set_range(write_hid_device, context.device.product_id, context.range);
 
 	struct input_loop_context ilc = {
 		.context = context,
