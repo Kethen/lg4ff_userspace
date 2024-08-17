@@ -407,6 +407,7 @@ void start_loops(struct loop_context context){
 
 
 	set_range(write_hid_device, context.device.product_id, context.range);
+	set_auto_center(write_hid_device, context.device.product_id, context.auto_center);
 
 	struct input_loop_context ilc = {
 		.context = context,

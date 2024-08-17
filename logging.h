@@ -2,6 +2,7 @@
 #define __LOGGING_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define STDOUT(...){ \
 	fprintf(stdout, __VA_ARGS__); \
