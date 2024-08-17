@@ -121,6 +121,17 @@ int main(int argc, char** argv){
 	int range = 900;
 
 	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:")) != -1){
+		#define CLAMP_ARG_VALUE(name, field, min, max){ \
+			if(field > max){ \
+				field = max; \
+				STDERR("%s is too large, setting %d instead\n", name, max); \
+			} \
+			if(field < min){ \
+				field = min; \
+				STDERR("%s is too small, setting %d instead\n", name, min); \
+			} \
+		}
+
 		switch(opt){
 			case 'l':
 				list_devices(hidraw_devices, wheels_found);
@@ -144,18 +155,23 @@ int main(int argc, char** argv){
 				break;
 			case 'g':
 				gain = atoi(optarg);
+				CLAMP_ARG_VALUE("gain", gain, 0, 65535);
 				break;
 			case 'a':
 				auto_center = atoi(optarg);
+				CLAMP_ARG_VALUE("auto center", auto_center, 0, 65535);
 				break;
 			case 's':
 				spring_level = atoi(optarg);
+				CLAMP_ARG_VALUE("spring level", spring_level, 0, 100);
 				break;
 			case 'd':
 				damper_level = atoi(optarg);
+				CLAMP_ARG_VALUE("damper level", damper_level, 0, 100);
 				break;
 			case 'f':
 				friction_level = atoi(optarg);
+				CLAMP_ARG_VALUE("friction level", friction_level, 0, 100);
 				break;
 			case 'r':
 				range = atoi(optarg);
@@ -165,7 +181,10 @@ int main(int argc, char** argv){
 				print_help(argv[0]);
 				return 0;
 		}
+
+		#undef CLAMP_ARG_VALUE
 	}
+
 
 	if(wheels_found == 0){
 		STDERR("no supported wheel found\n");
