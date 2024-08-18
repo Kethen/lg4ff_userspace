@@ -17,6 +17,9 @@
 #include "driver_loops.h"
 #include "logging.h"
 #include "configure.h"
+#include "force_feedback.h"
+
+// ref https://github.com/berarma/new-lg4ff/blob/master/hid-lg4ff.c
 
 #define SETUP_KEY(f, k){ \
 	ioctl(f, UI_SET_EVBIT, EV_KEY); \
@@ -26,6 +29,16 @@
 #define SETUP_AXIS(f, a, min, max){ \
 	ioctl(f, UI_SET_EVBIT, EV_ABS); \
 	ioctl(f, UI_SET_ABSBIT, a); \
+	struct uinput_abs_setup uas = {0}; \
+	uas.code = a; \
+	uas.absinfo.minimum = min; \
+	uas.absinfo.maximum = max; \
+	ioctl(f, UI_ABS_SETUP, &uas); \
+}
+
+#define SETUP_FFB(f, k){ \
+	ioctl(f, UI_SET_EVBIT, EV_FF); \
+	ioctl(f, UI_SET_FFBIT, k); \
 }
 
 #define EMIT_INPUT(f, t, c, v){ \
@@ -68,10 +81,25 @@ static void uinput_g29_setup(int uinput_fd){
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
 	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
 
+	// ffb
+	SETUP_FFB(uinput_fd, FF_CONSTANT);
+	SETUP_FFB(uinput_fd, FF_SPRING);
+	SETUP_FFB(uinput_fd, FF_DAMPER);
+	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+	SETUP_FFB(uinput_fd, FF_PERIODIC);
+	SETUP_FFB(uinput_fd, FF_SINE);
+	SETUP_FFB(uinput_fd, FF_SQUARE);
+	SETUP_FFB(uinput_fd, FF_TRIANGLE);
+	SETUP_FFB(uinput_fd, FF_SAW_UP);
+	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+	SETUP_FFB(uinput_fd, FF_RAMP);
+	SETUP_FFB(uinput_fd, FF_FRICTION);
+
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G29_WHEEL;
+	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
 	strcpy(usetup.name, "userspace G29");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
@@ -98,10 +126,25 @@ static void uinput_g27_setup(int uinput_fd){
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
 	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
 
+	// ffb
+	SETUP_FFB(uinput_fd, FF_CONSTANT);
+	SETUP_FFB(uinput_fd, FF_SPRING);
+	SETUP_FFB(uinput_fd, FF_DAMPER);
+	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+	SETUP_FFB(uinput_fd, FF_PERIODIC);
+	SETUP_FFB(uinput_fd, FF_SINE);
+	SETUP_FFB(uinput_fd, FF_SQUARE);
+	SETUP_FFB(uinput_fd, FF_TRIANGLE);
+	SETUP_FFB(uinput_fd, FF_SAW_UP);
+	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+	SETUP_FFB(uinput_fd, FF_RAMP);
+	SETUP_FFB(uinput_fd, FF_FRICTION);
+
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G27_WHEEL;
+	usetup.ff_effects_max = 16;
 	strcpy(usetup.name, "userspace G27");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
@@ -128,10 +171,25 @@ static void uinput_g25_setup(int uinput_fd){
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
 	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
 
+	// ffb
+	SETUP_FFB(uinput_fd, FF_CONSTANT);
+	SETUP_FFB(uinput_fd, FF_SPRING);
+	SETUP_FFB(uinput_fd, FF_DAMPER);
+	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+	SETUP_FFB(uinput_fd, FF_PERIODIC);
+	SETUP_FFB(uinput_fd, FF_SINE);
+	SETUP_FFB(uinput_fd, FF_SQUARE);
+	SETUP_FFB(uinput_fd, FF_TRIANGLE);
+	SETUP_FFB(uinput_fd, FF_SAW_UP);
+	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+	SETUP_FFB(uinput_fd, FF_RAMP);
+	SETUP_FFB(uinput_fd, FF_FRICTION);
+
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G25_WHEEL;
+	usetup.ff_effects_max = 16;
 	strcpy(usetup.name, "userspace G25");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
@@ -365,6 +423,86 @@ static void *input_loop(void *arg){
 	}
 }
 
+struct output_loop_context{
+	struct loop_context context;
+	int uinput_fd;
+	hid_device *write_hid_device;
+	pthread_mutex_t device_mutex;
+	struct lg4ff_device ffb_device;
+};
+
+#define CLAMP_VALUE(v, min, max){ \
+	if(v > max){ \
+		v = max; \
+	} \
+	if(v < min){ \
+		v = min; \
+	} \
+}
+
+static void *uinput_poll_loop(void *arg){
+	struct output_loop_context *loop_context = (struct output_loop_context *)arg;
+	int ret;
+	while(true){
+		struct input_event e;
+		int ret = read(loop_context->uinput_fd, &e, sizeof(struct input_event));
+		if(ret != sizeof(struct input_event)){
+			STDERR("failed reading ffb event from uinput, %s\n", strerror(errno));
+			exit(1);
+		}
+
+		switch(e.type){
+			case EV_FF:{
+				switch(e.code){
+					case FF_AUTOCENTER:{
+						CLAMP_VALUE(e.value, 0, 65535);
+						pthread_mutex_lock(&loop_context->device_mutex);
+						set_auto_center(loop_context->write_hid_device, loop_context->context.device.product_id, e.value);
+						pthread_mutex_unlock(&loop_context->device_mutex);
+						break;
+					}
+					case FF_GAIN:{
+						CLAMP_VALUE(e.value, 0, 65535);
+						pthread_mutex_lock(&loop_context->device_mutex);
+						loop_context->ffb_device.app_gain = e.value;
+						pthread_mutex_unlock(&loop_context->device_mutex);
+						break;
+					}
+					default:{
+						pthread_mutex_lock(&loop_context->device_mutex);
+						// TODO update effect status using e.code and e.value
+						pthread_mutex_unlock(&loop_context->device_mutex);
+					}
+				}
+				break;
+			}
+			case EV_UINPUT:{
+				switch(e.code){
+					case UI_FF_UPLOAD:{
+						struct uinput_ff_upload upload;
+						upload.request_id = e.value;
+						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_UPLOAD, &upload);
+						// TODO actually start tracking the uploaded effect
+						upload.retval = 0;
+						ioctl(loop_context->uinput_fd, UI_END_FF_UPLOAD, &upload);
+						break;
+					}
+					case UI_FF_ERASE:{
+						struct uinput_ff_erase erase;
+						erase.request_id = e.value;
+						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_ERASE, &erase);
+						// TODO actually modify the effect tracking
+						erase.retval = 0;
+						ioctl(loop_context->uinput_fd, UI_END_FF_ERASE, &erase);
+						break;
+					}
+				}
+			}
+		}
+
+	}
+}
+
 void start_loops(struct loop_context context){
 	// open hid device twice, once for input, once for output
 	hid_device *read_hid_device = hid_open_path(context.device.backend_path);
@@ -422,8 +560,30 @@ void start_loops(struct loop_context context){
 	}
 
 	// TODO ffb loop
+	struct output_loop_context olc = {
+		.context = context,
+		.uinput_fd = uinput_fd,
+		.write_hid_device = write_hid_device,
+		.ffb_device.gain = context.gain,
+		.ffb_device.app_gain = 0,
+		.ffb_device.spring_level = context.spring_level,
+		.ffb_device.damper_level = context.damper_level,
+		.ffb_device.friction_level = context.friction_level
+	};
+	ret = pthread_mutex_init(&olc.device_mutex, NULL);
+	if(ret != 0){
+		STDERR("failed initializing mutex for ffb device loops\n");
+		exit(1);
+	}
 
+	pthread_t uinput_poll_thread;
+	ret = pthread_create(&uinput_poll_thread, NULL, uinput_poll_loop, (void*)&olc);
+	if(ret != 0){
+		STDERR("failed starting uinput polling thread\n");
+		exit(1);
+	}
 
 	pthread_join(input_thread, NULL);
+	pthread_join(uinput_poll_thread, NULL);
 }
 

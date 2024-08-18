@@ -64,6 +64,7 @@ static void set_autocenter_default(hid_device *hd, int gain){
 		STDERR("failed sending auto center disabling command, %s\n", error_buf);
 		exit(1);
 	}
+	STDOUT("sent auto center disable command\n");
 
 	if(gain == 0){
 		return;
@@ -96,6 +97,7 @@ static void set_autocenter_default(hid_device *hd, int gain){
 		STDERR("failed sending auto center gain command, %s\n", error_buf);
 		exit(1);
 	}
+	STDOUT("sent auto center gain command for gain %d\n", gain);
 
 	// enable auto center
 	memset(cmd, 0x00, 7);
@@ -107,6 +109,8 @@ static void set_autocenter_default(hid_device *hd, int gain){
 		STDERR("failed sending auto center enable command, %s\n", error_buf);
 		exit(1);
 	}
+
+	STDOUT("sent auto center enable command\n");
 }
 
 int set_auto_center(hid_device *hd, uint16_t product_id, int gain){

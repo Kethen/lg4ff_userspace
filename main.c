@@ -26,7 +26,7 @@ static void print_help(char *binary_name){
 	STDOUT("listing devices: -l\n");
 	STDOUT("display this message: -h\n");
 	STDOUT("reboot wheel into another mode: -m <g25/g27/g29> -n <device number in -l>\n");
-	STDOUT("start driver on wheel: -w -n <device number in -l> [-g <gain, 0-65535>] [-a <auto center, 0-65535>] [-s <spring level, 0-100>] [-d <damper level>] [-f <friction level>]\n")
+	STDOUT("start driver on wheel: -w -n <device number in -l> [-g <gain, 0-65535>] [-a <auto center, 0-65535>] [-s <spring level, 0-100>] [-d <damper level, 0-100>] [-f <friction level, 0-100>]\n")
 }
 
 enum operation_mode{
