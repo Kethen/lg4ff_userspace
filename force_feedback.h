@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <hidapi/hidapi.h>
+
 #define LG4FF_MAX_EFFECTS 16
 
 #if __linux__
@@ -87,7 +89,7 @@ struct ff_effect{
 
 #endif
 
-// from https://github.com/berarma/new-lg4ff/blob/master/hid-lg4ff.c
+// ported from https://github.com/berarma/new-lg4ff/blob/master/hid-lg4ff.c
 // effect state tracking before wheel rendering
 struct lg4ff_effect_state{
 	struct ff_effect effect;
@@ -122,7 +124,6 @@ struct lg4ff_effect_parameters{
 	uint32_t clip;
 };
 
-// slots for FF_CONSTANT, FF_SPRING, FF_DAMPER and FF_FRICTION effects
 struct lg4ff_slot{
 	int32_t id;
 	struct lg4ff_effect_parameters parameters;
@@ -144,6 +145,15 @@ struct lg4ff_device{
 	int32_t spring_level;
 	int32_t damper_level;
 	int32_t friction_level;
+
+	int32_t peak_ffb_level;
+
+	hid_device *hid_handle;
 };
+
+void lg4ff_init_slots(struct lg4ff_device *device);
+int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old);
+int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value);
+int lg4ff_timer(struct lg4ff_device *device);
 
 #endif

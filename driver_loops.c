@@ -440,6 +440,23 @@ struct output_loop_context{
 	} \
 }
 
+static void *effect_loop(void *arg){
+	struct output_loop_context *loop_context = (struct output_loop_context *)arg;
+	while(true){
+		pthread_mutex_lock(&loop_context->device_mutex);
+		lg4ff_timer(&loop_context->ffb_device);
+
+		if(loop_context->ffb_device.effects_used == 0){
+			pthread_mutex_unlock(&loop_context->device_mutex);
+			break;
+		}
+		pthread_mutex_unlock(&loop_context->device_mutex);
+		struct timespec duration = {0};
+		duration.tv_nsec = 2 * 1000000;
+		nanosleep(&duration, NULL);
+	}
+}
+
 static void *uinput_poll_loop(void *arg){
 	struct output_loop_context *loop_context = (struct output_loop_context *)arg;
 	int ret;
@@ -470,7 +487,15 @@ static void *uinput_poll_loop(void *arg){
 					}
 					default:{
 						pthread_mutex_lock(&loop_context->device_mutex);
-						// TODO update effect status using e.code and e.value
+						lg4ff_play_effect(&loop_context->ffb_device, e.code, e.value);
+						if(loop_context->ffb_device.effects_used == 1){
+							pthread_t effect_thread;
+							ret = pthread_create(&effect_thread, NULL, effect_loop, loop_context);
+							if(ret != 0){
+								STDERR("failed starting effect thread\n");
+								exit(1);
+							}
+						}
 						pthread_mutex_unlock(&loop_context->device_mutex);
 					}
 				}
@@ -482,8 +507,7 @@ static void *uinput_poll_loop(void *arg){
 						struct uinput_ff_upload upload;
 						upload.request_id = e.value;
 						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_UPLOAD, &upload);
-						// TODO actually start tracking the uploaded effect
-						upload.retval = 0;
+						upload.retval = lg4ff_upload_effect(&loop_context->ffb_device, &upload.effect, &upload.old);
 						ioctl(loop_context->uinput_fd, UI_END_FF_UPLOAD, &upload);
 						break;
 					}
@@ -491,7 +515,7 @@ static void *uinput_poll_loop(void *arg){
 						struct uinput_ff_erase erase;
 						erase.request_id = e.value;
 						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_ERASE, &erase);
-						// TODO actually modify the effect tracking
+						// not implemented
 						erase.retval = 0;
 						ioctl(loop_context->uinput_fd, UI_END_FF_ERASE, &erase);
 						break;
@@ -559,17 +583,20 @@ void start_loops(struct loop_context context){
 		exit(1);
 	}
 
-	// TODO ffb loop
-	struct output_loop_context olc = {
-		.context = context,
-		.uinput_fd = uinput_fd,
-		.write_hid_device = write_hid_device,
-		.ffb_device.gain = context.gain,
-		.ffb_device.app_gain = 0,
-		.ffb_device.spring_level = context.spring_level,
-		.ffb_device.damper_level = context.damper_level,
-		.ffb_device.friction_level = context.friction_level
-	};
+	struct output_loop_context olc = {0};
+	olc.context = context;
+	olc.uinput_fd = uinput_fd;
+	olc.write_hid_device = write_hid_device;
+	olc.ffb_device.effects_used = 0;
+	olc.ffb_device.gain = context.gain;
+	olc.ffb_device.app_gain = 0xffff;
+	olc.ffb_device.spring_level = context.spring_level;
+	olc.ffb_device.damper_level = context.damper_level;
+	olc.ffb_device.friction_level = context.friction_level;
+	olc.ffb_device.hid_handle = write_hid_device;
+
+	lg4ff_init_slots(&olc.ffb_device);
+
 	ret = pthread_mutex_init(&olc.device_mutex, NULL);
 	if(ret != 0){
 		STDERR("failed initializing mutex for ffb device loops\n");
