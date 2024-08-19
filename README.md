@@ -65,7 +65,7 @@ apt install libhidapi-hidraw0
 
 #### 2. For driver mode to work, you'd need access to /dev/hidraw* of your wheel as well as /dev/uinput
 
-You are not recommended to use this driver as root, instead, copy `60-lg4ff-userspace.rules` from this repository to `/etc/udev/rules.d/`, then run `sudo udevadm control --reload; sudo udevadm trigger` to set correct device node permissions
+You are recommended to NOT use this driver as root, instead, copy `60-lg4ff-userspace.rules` from this repository to `/etc/udev/rules.d/`, then run `sudo udevadm control --reload; sudo udevadm trigger` to set correct device node permissions
 
 #### 3. For mode switching to work, you'd have to make sure the in-tree driver is not also performing mode switching to your wheel
 
