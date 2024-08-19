@@ -30,9 +30,9 @@
 
 #define STOP_EFFECT(state) ((state)->flags = 0)
 
-#define CLAMP_VALUE_U16(x) ((unsigned short)((x) > 0xffff ? 0xffff : (x)))
+#define CLAMP_VALUE_U16(x) ((uint16_t)((x) > 0xffff ? 0xffff : (x)))
 #define SCALE_VALUE_U16(x, bits) (CLAMP_VALUE_U16(x) >> (16 - bits))
-#define CLAMP_VALUE_S16(x) ((unsigned short)((x) <= -0x8000 ? -0x8000 : ((x) > 0x7fff ? 0x7fff : (x))))
+#define CLAMP_VALUE_S16(x) ((uint16_t)((x) <= -0x8000 ? -0x8000 : ((x) > 0x7fff ? 0x7fff : (x))))
 #define TRANSLATE_FORCE(x) ((CLAMP_VALUE_S16(x) + 0x8000) >> 8)
 #define SCALE_COEFF(x, bits) SCALE_VALUE_U16(abs(x) * 2, bits)
 
@@ -75,7 +75,7 @@ int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, s
 int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value)
 {
 	struct lg4ff_effect_state *state;
-	unsigned long now = get_time_ms();
+	uint64_t now = get_time_ms();
 
 	state = &device->states[effect_id];
 
@@ -115,7 +115,7 @@ static struct ff_envelope *lg4ff_effect_envelope(struct ff_effect *effect)
 static void lg4ff_update_state(struct lg4ff_effect_state *state, const uint64_t now)
 {
 	struct ff_effect *effect = &state->effect;
-	unsigned long phase_time;
+	uint64_t phase_time;
 
 	if (!test_bit(FF_EFFECT_ALLSET, &state->flags)) {
 		state->play_at = state->start_at + effect->replay.delay;
@@ -168,11 +168,11 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const uint64_t 
 	}
 }
 
-static int lg4ff_calculate_constant(struct lg4ff_effect_state *state)
+static int32_t lg4ff_calculate_constant(struct lg4ff_effect_state *state)
 {
-	int level_sign;
-	int level = state->effect.u.constant.level;
-	int d, t;
+	int32_t level_sign;
+	int32_t level = state->effect.u.constant.level;
+	int32_t d, t;
 
 	if (state->time_playing < state->envelope->attack_length) {
 		level_sign = level < 0 ? -1 : 1;
@@ -190,12 +190,12 @@ static int lg4ff_calculate_constant(struct lg4ff_effect_state *state)
 	return state->direction_gain * level / 0x7fff;
 }
 
-static int lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
+static int32_t lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
 {
 	struct ff_ramp_effect *ramp = &state->effect.u.ramp;
-	int level_sign;
-	int level;
-	int d, t;
+	int32_t level_sign;
+	int32_t level;
+	int32_t d, t;
 
 	if (state->time_playing < state->envelope->attack_length) {
 		level = ramp->start_level;
@@ -217,13 +217,13 @@ static int lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
 	return state->direction_gain * level / 0x7fff;
 }
 
-static int lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
+static int32_t lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 {
 	struct ff_periodic_effect *periodic = &state->effect.u.periodic;
-	int magnitude = periodic->magnitude;
-	int magnitude_sign = magnitude < 0 ? -1 : 1;
-	int level = periodic->offset;
-	int d, t;
+	int32_t magnitude = periodic->magnitude;
+	int32_t magnitude_sign = magnitude < 0 ? -1 : 1;
+	int32_t level = periodic->offset;
+	int32_t d, t;
 
 	if (state->time_playing < state->envelope->attack_length) {
 		d = magnitude - magnitude_sign * state->envelope->attack_level;
@@ -261,11 +261,11 @@ static void lg4ff_calculate_spring(struct lg4ff_effect_state *state, struct lg4f
 {
 	struct ff_condition_effect *condition = &state->effect.u.condition[0];
 
-	parameters->d1 = ((int)condition->center) - condition->deadband / 2;
-	parameters->d2 = ((int)condition->center) + condition->deadband / 2;
+	parameters->d1 = ((int32_t)condition->center) - condition->deadband / 2;
+	parameters->d2 = ((int32_t)condition->center) + condition->deadband / 2;
 	parameters->k1 = condition->left_coeff;
 	parameters->k2 = condition->right_coeff;
-	parameters->clip = (unsigned)condition->right_saturation;
+	parameters->clip = (uint16_t)condition->right_saturation;
 }
 
 static void lg4ff_calculate_resistance(struct lg4ff_effect_state *state, struct lg4ff_effect_parameters *parameters)
@@ -274,18 +274,18 @@ static void lg4ff_calculate_resistance(struct lg4ff_effect_state *state, struct 
 
 	parameters->k1 = condition->left_coeff;
 	parameters->k2 = condition->right_coeff;
-	parameters->clip = (unsigned)condition->right_saturation;
+	parameters->clip = (uint16_t)condition->right_saturation;
 }
 
 static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_parameters *parameters)
 {
 	uint8_t original_cmd[7];
-	int d1;
-	int d2;
-	int k1;
-	int k2;
-	int s1;
-	int s2;
+	int32_t d1;
+	int32_t d2;
+	int32_t k1;
+	int32_t k2;
+	int32_t s1;
+	int32_t s2;
 
 	memcpy(original_cmd, slot->current_cmd, sizeof(original_cmd));
 
@@ -428,18 +428,18 @@ int lg4ff_timer(struct lg4ff_device *device)
 	struct lg4ff_effect_state *state;
 	struct lg4ff_effect_parameters parameters[4];
 	uint64_t now = get_time_ms();
-	unsigned gain;
-	int current_period;
-	int count;
-	int effect_id;
+	uint16_t gain;
+	int32_t current_period;
+	int32_t count;
+	int32_t effect_id;
 	int i;
-	int ffb_level;
+	int32_t ffb_level;
 
 	// XXX how to detect stacked up effects here?
 
 	memset(parameters, 0, sizeof(parameters));
 
-	gain = (unsigned)device->gain * device->app_gain / 0xffff;
+	gain = (uint16_t)device->gain * device->app_gain / 0xffff;
 
 	count = device->effects_used;
 
@@ -497,15 +497,15 @@ int lg4ff_timer(struct lg4ff_device *device)
 		}
 	}
 
-	parameters[0].level = (long)parameters[0].level * gain / 0xffff;
+	parameters[0].level = (int64_t)parameters[0].level * gain / 0xffff;
 	parameters[1].clip = parameters[1].clip * device->spring_level / 100;
 	parameters[2].clip = parameters[2].clip * device->damper_level / 100;
 	parameters[3].clip = parameters[3].clip * device->friction_level / 100;
 
 	ffb_level = abs(parameters[0].level);
 	for (i = 1; i < 4; i++) {
-		parameters[i].k1 = (long)parameters[i].k1 * gain / 0xffff;
-		parameters[i].k2 = (long)parameters[i].k2 * gain / 0xffff;
+		parameters[i].k1 = (int64_t)parameters[i].k1 * gain / 0xffff;
+		parameters[i].k2 = (int64_t)parameters[i].k2 * gain / 0xffff;
 		parameters[i].clip = parameters[i].clip * gain / 0xffff;
 		ffb_level += parameters[i].clip * 0x7fff / 0xffff;
 	}
