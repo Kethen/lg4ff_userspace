@@ -439,7 +439,7 @@ int lg4ff_timer(struct lg4ff_device *device)
 
 	memset(parameters, 0, sizeof(parameters));
 
-	gain = (uint16_t)device->gain * device->app_gain / 0xffff;
+	gain = (uint32_t)device->gain * device->app_gain / 0xffff;
 
 	count = device->effects_used;
 
