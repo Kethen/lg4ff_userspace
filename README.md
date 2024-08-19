@@ -34,6 +34,7 @@ zypper install gcc libhidapi-devel
 
 Debian:
 ```
+apt update
 apt install gcc libhidapi-dev
 ```
 
@@ -44,11 +45,29 @@ bash build.sh
 
 ### Preparations before using the driver
 
-#### 1. For driver mode to work, you'd need access to /dev/hidraw* of your wheel as well as /dev/uinput
+#### 1. To run pre-built releases, make sure you have hidapi library installed
+
+Fedora:
+```
+dnf install hidapi
+```
+
+OpenSUSE:
+```
+zypper install libhidapi-hidraw0
+```
+
+Debian:
+```
+apt update
+apt install libhidapi-hidraw0
+```
+
+#### 2. For driver mode to work, you'd need access to /dev/hidraw* of your wheel as well as /dev/uinput
 
 You are not recommended to use this driver as root, instead, copy `60-lg4ff-userspace.rules` from this repository to `/etc/udev/rules.d/`, then run `sudo udevadm control --reload; sudo udevadm trigger` to set correct device node permissions
 
-#### 2. For mode switching to work, you'd have to make sure the in-tree driver is not also performing mode switching to your wheel
+#### 3. For mode switching to work, you'd have to make sure the in-tree driver is not also performing mode switching to your wheel
 
 Copy `logitech-hid.conf` to `/etc/modprobe.d/` then run `sudo modprobe -rv hid_logitech; sudo modprobe -v hid_logitech`
 
