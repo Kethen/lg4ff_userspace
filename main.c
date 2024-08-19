@@ -49,6 +49,8 @@ static void print_help(char *binary_name){
 	STDOUT("    [-H]\n");
 	STDOUT("  combine pedals, 0 for not combining any, 1 for combining gas and brake, 2 for combining gas and clutch, defaults to 0:\n");
 	STDOUT("    [-c <0/1/2>]\n");
+	STDOUT("  play effect on upload, for 'Fast' update type in BeamNG.drive:\n");
+	STDOUT("    [-u]\n")
 }
 
 enum operation_mode{
@@ -98,7 +100,19 @@ static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wh
 	return 0;
 }
 
-static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range, bool hide_effects, int combine_pedals){
+static int start_driver(
+		struct hidraw_device *hidraw_devices,
+		int wheels,
+		int wheel_num,
+		int gain,
+		int auto_center,
+		int spring_level,
+		int damper_level,
+		int friction_level,
+		int range,
+		bool hide_effects,
+		int combine_pedals,
+		bool play_on_upload){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
 	STDOUT("gain: %d\n", gain);
@@ -109,6 +123,7 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("range: %d\n", range);
 	STDOUT("hide effects: %s\n", hide_effects? "true": "false");
 	STDOUT("combine pedals: %d\n", combine_pedals);
+	STDOUT("play effect on upload: %s\n", play_on_upload? "true" : "false");
 
 	struct loop_context lc = {
 		.device = hidraw_devices[wheel_num - 1],
@@ -119,7 +134,8 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 		.friction_level = friction_level,
 		.range = range,
 		.hide_effects = hide_effects,
-		.combine_pedals = combine_pedals
+		.combine_pedals = combine_pedals,
+		.play_on_upload = play_on_upload
 	};
 	start_loops(lc);
 
@@ -147,8 +163,9 @@ int main(int argc, char** argv){
 	int range = 900;
 	bool hide_effects = false;
 	int combine_pedals = 0;
+	bool play_on_upload = false;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:u")) != -1){
 		#define CLAMP_ARG_VALUE(name, field, min, max){ \
 			if(field > max){ \
 				field = max; \
@@ -211,6 +228,9 @@ int main(int argc, char** argv){
 				combine_pedals = atoi(optarg);
 				CLAMP_ARG_VALUE("combine pedals", combine_pedals, 0, 2);
 				break;
+			case 'u':
+				play_on_upload = true;
+				break;
 			default:
 				print_help(argv[0]);
 				return 0;
@@ -236,7 +256,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals, play_on_upload);
 			return 0;
 		default:
 			print_help(argv[0]);

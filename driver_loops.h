@@ -15,6 +15,7 @@ struct loop_context{
 	int range;
 	bool hide_effects;
 	int combine_pedals;
+	bool play_on_upload;
 };
 
 void start_loops(struct loop_context context);

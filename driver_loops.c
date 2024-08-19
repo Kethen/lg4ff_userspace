@@ -468,10 +468,13 @@ static void *effect_loop(void *arg){
 		pthread_mutex_lock(&loop_context->device_mutex);
 		lg4ff_timer(&loop_context->ffb_device);
 
+		#if 0
 		if(loop_context->ffb_device.effects_used == 0){
 			pthread_mutex_unlock(&loop_context->device_mutex);
 			break;
 		}
+		#endif
+
 		pthread_mutex_unlock(&loop_context->device_mutex);
 		struct timespec duration = {0};
 		duration.tv_nsec = 2 * 1000000;
@@ -510,14 +513,16 @@ static void *uinput_poll_loop(void *arg){
 					default:{
 						pthread_mutex_lock(&loop_context->device_mutex);
 						lg4ff_play_effect(&loop_context->ffb_device, e.code, e.value);
+						#if 0
 						if(loop_context->ffb_device.effects_used == 1){
 							pthread_t effect_thread;
 							ret = pthread_create(&effect_thread, NULL, effect_loop, loop_context);
 							if(ret != 0){
-								STDERR("failed starting effect thread\n");
+								STDERR("failed starting effect thread, %s\n", strerror(ret));
 								exit(1);
 							}
 						}
+						#endif
 						pthread_mutex_unlock(&loop_context->device_mutex);
 					}
 				}
@@ -529,7 +534,22 @@ static void *uinput_poll_loop(void *arg){
 						struct uinput_ff_upload upload;
 						upload.request_id = e.value;
 						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_UPLOAD, &upload);
+						pthread_mutex_lock(&loop_context->device_mutex);
 						upload.retval = lg4ff_upload_effect(&loop_context->ffb_device, &upload.effect, &upload.old);
+						if(loop_context->context.play_on_upload && upload.retval == 0){
+							lg4ff_play_effect(&loop_context->ffb_device, upload.effect.id, 1);
+							#if 0
+							if(loop_context->ffb_device.effects_used == 1){
+								pthread_t effect_thread;
+								ret = pthread_create(&effect_thread, NULL, effect_loop, loop_context);
+								if(ret != 0){
+									STDERR("failed starting effect thread, %s\n", strerror(ret));
+									exit(1);
+								}
+							}
+							#endif
+						}
+						pthread_mutex_unlock(&loop_context->device_mutex);
 						ioctl(loop_context->uinput_fd, UI_END_FF_UPLOAD, &upload);
 						break;
 					}
@@ -626,11 +646,21 @@ void start_loops(struct loop_context context){
 	}
 
 	pthread_t uinput_poll_thread;
-	ret = pthread_create(&uinput_poll_thread, NULL, uinput_poll_loop, (void*)&olc);
+	ret = pthread_create(&uinput_poll_thread, NULL, uinput_poll_loop, (void *)&olc);
 	if(ret != 0){
 		STDERR("failed starting uinput polling thread\n");
 		exit(1);
 	}
+
+	#if 1
+	pthread_t effect_thread;
+	ret = pthread_create(&effect_thread, NULL, effect_loop, (void *)&olc);
+	if(ret != 0){
+		STDERR("failed starting effect thread, %s\n", strerror(ret));
+		exit(1);
+	}
+	pthread_join(effect_thread, NULL);
+	#endif
 
 	pthread_join(input_thread, NULL);
 	pthread_join(uinput_poll_thread, NULL);

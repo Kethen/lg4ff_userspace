@@ -100,6 +100,8 @@ start driver on wheel:
     [-H]
   combine pedals, 0 for not combining any, 1 for combining gas and brake, 2 for combining gas and clutch, defaults to 0:
     [-c <0/1/2>]
+  play effect on upload, for 'Fast' update type in BeamNG.drive:
+    [-u]
 ```
 
 ### Usage Examples
@@ -153,6 +155,7 @@ friction level: 30
 range: 900
 hide effects: false
 combine pedals: 0
+play effect on upload: false
 sent range setting command for range 900
 sent auto center disable command
 
