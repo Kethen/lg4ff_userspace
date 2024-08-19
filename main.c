@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <unistd.h>
 
@@ -23,10 +24,29 @@ static void list_devices(struct hidraw_device *hidraw_devices, int entries){
 
 static void print_help(char *binary_name){
 	STDOUT("usage: %s <options>\n", binary_name);
-	STDOUT("listing devices: -l\n");
-	STDOUT("display this message: -h\n");
-	STDOUT("reboot wheel into another mode: -m <g25/g27/g29> -n <device number in -l>\n");
-	STDOUT("start driver on wheel: -w -n <device number in -l> [-g <gain, 0-65535>] [-a <auto center, 0-65535>] [-s <spring level, 0-100>] [-d <damper level, 0-100>] [-f <friction level, 0-100>]\n")
+	STDOUT("listing devices:\n");
+	STDOUT("  %s -l\n", binary_name)
+	STDOUT("display this message:\n");
+	STDOUT("  %s -h\n", binary_name);
+	STDOUT("reboot wheel into another mode:\n");
+	STDOUT("  %s -m <g25/g27/g29> [-n device number in -l]\n", binary_name);
+	STDOUT("start driver on wheel:\n");
+	STDOUT("  %s -w [driver options]\n", binary_name);
+	STDOUT("  driver options:\n");
+	STDOUT("  wheel number to start the driver on, defaults to 1:\n")
+	STDOUT("    [-n <device number in -l>]\n");
+	STDOUT("  gain, independent of application set gain, defaults to 65535\n");
+	STDOUT("    [-g <gain, 0-65535>]\n");
+	STDOUT("  auto center gain, can be overriden by application, defaults to 0\n")
+	STDOUT("    [-a <auto center, 0-65535>]\n");
+	STDOUT("  spring effect level, defaults to 30:\n")
+	STDOUT("    [-s <spring level, 0-100>]\n");
+	STDOUT("  damper effect level, defaults to 30:\n")
+	STDOUT("    [-d <damper level, 0-100>]\n");
+	STDOUT("  friction effect level, defaults to 30:\n")
+	STDOUT("    [-f <friction level, 0-100>]\n");
+	STDOUT("  hide all effects except for constant force from application\n");
+	STDOUT("    [-H]\n");
 }
 
 enum operation_mode{
@@ -76,7 +96,7 @@ static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wh
 	return 0;
 }
 
-static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range){
+static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range, bool hide_effects){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
 	STDOUT("gain: %d\n", gain);
@@ -85,6 +105,7 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("damper level: %d\n", damper_level);
 	STDOUT("friction level: %d\n", friction_level);
 	STDOUT("range: %d\n", range);
+	STDOUT("hide effects: %s\n", hide_effects? "true": "false");
 
 	struct loop_context lc = {
 		.device = hidraw_devices[wheel_num - 1],
@@ -93,7 +114,8 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 		.spring_level = spring_level,
 		.damper_level = damper_level,
 		.friction_level = friction_level,
-		.range = range
+		.range = range,
+		.hide_effects = hide_effects
 	};
 	start_loops(lc);
 
@@ -119,8 +141,9 @@ int main(int argc, char** argv){
 	int damper_level = 30;
 	int friction_level = 30;
 	int range = 900;
+	bool hide_effects = false;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:H")) != -1){
 		#define CLAMP_ARG_VALUE(name, field, min, max){ \
 			if(field > max){ \
 				field = max; \
@@ -176,7 +199,9 @@ int main(int argc, char** argv){
 			case 'r':
 				range = atoi(optarg);
 				break;
-			case 'h':
+			case 'H':
+				hide_effects = true;
+				break;
 			default:
 				print_help(argv[0]);
 				return 0;
@@ -202,7 +227,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects);
 			return 0;
 		default:
 			print_help(argv[0]);

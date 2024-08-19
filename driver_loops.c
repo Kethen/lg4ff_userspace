@@ -60,7 +60,7 @@ static bool get_bit(const uint8_t *buf, int bit_num, int buf_len){
 	return (buf[byte_offset] & mask) ? 1 : 0;
 }
 
-static void uinput_g29_setup(int uinput_fd){
+static void uinput_g29_setup(int uinput_fd, struct loop_context *context){
 	// 25 buttons numerated from 1 to 25 on hid
 	// wine just goes ascending so map all 25 onto trigger happy during evdev -> hid
 	for(int i = 0;i < 25; i++){
@@ -83,17 +83,19 @@ static void uinput_g29_setup(int uinput_fd){
 
 	// ffb
 	SETUP_FFB(uinput_fd, FF_CONSTANT);
-	SETUP_FFB(uinput_fd, FF_SPRING);
-	SETUP_FFB(uinput_fd, FF_DAMPER);
-	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
-	SETUP_FFB(uinput_fd, FF_PERIODIC);
-	SETUP_FFB(uinput_fd, FF_SINE);
-	SETUP_FFB(uinput_fd, FF_SQUARE);
-	SETUP_FFB(uinput_fd, FF_TRIANGLE);
-	SETUP_FFB(uinput_fd, FF_SAW_UP);
-	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
-	SETUP_FFB(uinput_fd, FF_RAMP);
-	SETUP_FFB(uinput_fd, FF_FRICTION);
+	if(!context->hide_effects){
+		SETUP_FFB(uinput_fd, FF_SPRING);
+		SETUP_FFB(uinput_fd, FF_DAMPER);
+		SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+		SETUP_FFB(uinput_fd, FF_PERIODIC);
+		SETUP_FFB(uinput_fd, FF_SINE);
+		SETUP_FFB(uinput_fd, FF_SQUARE);
+		SETUP_FFB(uinput_fd, FF_TRIANGLE);
+		SETUP_FFB(uinput_fd, FF_SAW_UP);
+		SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+		SETUP_FFB(uinput_fd, FF_RAMP);
+		SETUP_FFB(uinput_fd, FF_FRICTION);
+	}
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
@@ -106,7 +108,7 @@ static void uinput_g29_setup(int uinput_fd){
 	ioctl(uinput_fd, UI_DEV_CREATE);
 }
 
-static void uinput_g27_setup(int uinput_fd){
+static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
 	// 22 buttons numerated from 1 to 22 on hid
 	for(int i = 0;i < 22; i++){
 		int key = BTN_TRIGGER_HAPPY + i;
@@ -128,30 +130,32 @@ static void uinput_g27_setup(int uinput_fd){
 
 	// ffb
 	SETUP_FFB(uinput_fd, FF_CONSTANT);
-	SETUP_FFB(uinput_fd, FF_SPRING);
-	SETUP_FFB(uinput_fd, FF_DAMPER);
-	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
-	SETUP_FFB(uinput_fd, FF_PERIODIC);
-	SETUP_FFB(uinput_fd, FF_SINE);
-	SETUP_FFB(uinput_fd, FF_SQUARE);
-	SETUP_FFB(uinput_fd, FF_TRIANGLE);
-	SETUP_FFB(uinput_fd, FF_SAW_UP);
-	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
-	SETUP_FFB(uinput_fd, FF_RAMP);
-	SETUP_FFB(uinput_fd, FF_FRICTION);
+	if(!context->hide_effects){
+		SETUP_FFB(uinput_fd, FF_SPRING);
+		SETUP_FFB(uinput_fd, FF_DAMPER);
+		SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+		SETUP_FFB(uinput_fd, FF_PERIODIC);
+		SETUP_FFB(uinput_fd, FF_SINE);
+		SETUP_FFB(uinput_fd, FF_SQUARE);
+		SETUP_FFB(uinput_fd, FF_TRIANGLE);
+		SETUP_FFB(uinput_fd, FF_SAW_UP);
+		SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+		SETUP_FFB(uinput_fd, FF_RAMP);
+		SETUP_FFB(uinput_fd, FF_FRICTION);
+	}
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G27_WHEEL;
-	usetup.ff_effects_max = 16;
+	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
 	strcpy(usetup.name, "userspace G27");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
 }
 
-static void uinput_g25_setup(int uinput_fd){
+static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 	// 22 buttons numerated from 1 to 22 on hid
 	for(int i = 0;i < 19; i++){
 		int key = BTN_TRIGGER_HAPPY + i;
@@ -173,23 +177,25 @@ static void uinput_g25_setup(int uinput_fd){
 
 	// ffb
 	SETUP_FFB(uinput_fd, FF_CONSTANT);
-	SETUP_FFB(uinput_fd, FF_SPRING);
-	SETUP_FFB(uinput_fd, FF_DAMPER);
-	SETUP_FFB(uinput_fd, FF_AUTOCENTER);
-	SETUP_FFB(uinput_fd, FF_PERIODIC);
-	SETUP_FFB(uinput_fd, FF_SINE);
-	SETUP_FFB(uinput_fd, FF_SQUARE);
-	SETUP_FFB(uinput_fd, FF_TRIANGLE);
-	SETUP_FFB(uinput_fd, FF_SAW_UP);
-	SETUP_FFB(uinput_fd, FF_SAW_DOWN);
-	SETUP_FFB(uinput_fd, FF_RAMP);
-	SETUP_FFB(uinput_fd, FF_FRICTION);
+	if(!context->hide_effects){
+		SETUP_FFB(uinput_fd, FF_SPRING);
+		SETUP_FFB(uinput_fd, FF_DAMPER);
+		SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+		SETUP_FFB(uinput_fd, FF_PERIODIC);
+		SETUP_FFB(uinput_fd, FF_SINE);
+		SETUP_FFB(uinput_fd, FF_SQUARE);
+		SETUP_FFB(uinput_fd, FF_TRIANGLE);
+		SETUP_FFB(uinput_fd, FF_SAW_UP);
+		SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+		SETUP_FFB(uinput_fd, FF_RAMP);
+		SETUP_FFB(uinput_fd, FF_FRICTION);
+	}
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
 	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G25_WHEEL;
-	usetup.ff_effects_max = 16;
+	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
 	strcpy(usetup.name, "userspace G25");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
@@ -554,13 +560,13 @@ void start_loops(struct loop_context context){
 
 	switch(context.device.product_id){
 		case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
-			uinput_g29_setup(uinput_fd);
+			uinput_g29_setup(uinput_fd, &context);
 			break;
 		case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
-			uinput_g27_setup(uinput_fd);
+			uinput_g27_setup(uinput_fd, &context);
 			break;
 		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
-			uinput_g25_setup(uinput_fd);
+			uinput_g25_setup(uinput_fd, &context);
 			break;
 		default:
 			STDERR("uinput device for %s(0x%04x) is not implemented\n", get_name_by_product_id(context.device.product_id), context.device.product_id);
