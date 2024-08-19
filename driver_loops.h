@@ -14,6 +14,7 @@ struct loop_context{
 	int friction_level;
 	int range;
 	bool hide_effects;
+	int combine_pedals;
 };
 
 void start_loops(struct loop_context context);

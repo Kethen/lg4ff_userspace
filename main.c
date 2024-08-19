@@ -35,9 +35,9 @@ static void print_help(char *binary_name){
 	STDOUT("  driver options:\n");
 	STDOUT("  wheel number to start the driver on, defaults to 1:\n")
 	STDOUT("    [-n <device number in -l>]\n");
-	STDOUT("  gain, independent of application set gain, defaults to 65535\n");
+	STDOUT("  gain, independent of application set gain, defaults to 65535:\n");
 	STDOUT("    [-g <gain, 0-65535>]\n");
-	STDOUT("  auto center gain, can be overriden by application, defaults to 0\n")
+	STDOUT("  auto center gain, can be overriden by application, defaults to 0:\n")
 	STDOUT("    [-a <auto center, 0-65535>]\n");
 	STDOUT("  spring effect level, defaults to 30:\n")
 	STDOUT("    [-s <spring level, 0-100>]\n");
@@ -45,8 +45,10 @@ static void print_help(char *binary_name){
 	STDOUT("    [-d <damper level, 0-100>]\n");
 	STDOUT("  friction effect level, defaults to 30:\n")
 	STDOUT("    [-f <friction level, 0-100>]\n");
-	STDOUT("  hide all effects except for constant force from application\n");
+	STDOUT("  hide all effects except for constant force from application:\n");
 	STDOUT("    [-H]\n");
+	STDOUT("  combine pedals, 0 for not combining any, 1 for combining gas and brake, 2 for combining gas and clutch, defaults to 0:\n");
+	STDOUT("    [-c <0/1/2>]\n");
 }
 
 enum operation_mode{
@@ -96,7 +98,7 @@ static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wh
 	return 0;
 }
 
-static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range, bool hide_effects){
+static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int gain, int auto_center, int spring_level, int damper_level, int friction_level, int range, bool hide_effects, int combine_pedals){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
 	STDOUT("gain: %d\n", gain);
@@ -106,6 +108,7 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 	STDOUT("friction level: %d\n", friction_level);
 	STDOUT("range: %d\n", range);
 	STDOUT("hide effects: %s\n", hide_effects? "true": "false");
+	STDOUT("combine pedals: %d\n", combine_pedals);
 
 	struct loop_context lc = {
 		.device = hidraw_devices[wheel_num - 1],
@@ -115,7 +118,8 @@ static int start_driver(struct hidraw_device *hidraw_devices, int wheels, int wh
 		.damper_level = damper_level,
 		.friction_level = friction_level,
 		.range = range,
-		.hide_effects = hide_effects
+		.hide_effects = hide_effects,
+		.combine_pedals = combine_pedals
 	};
 	start_loops(lc);
 
@@ -142,8 +146,9 @@ int main(int argc, char** argv){
 	int friction_level = 30;
 	int range = 900;
 	bool hide_effects = false;
+	int combine_pedals = 0;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:H")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:")) != -1){
 		#define CLAMP_ARG_VALUE(name, field, min, max){ \
 			if(field > max){ \
 				field = max; \
@@ -202,6 +207,10 @@ int main(int argc, char** argv){
 			case 'H':
 				hide_effects = true;
 				break;
+			case 'c':
+				combine_pedals = atoi(optarg);
+				CLAMP_ARG_VALUE("combine pedals", combine_pedals, 0, 2);
+				break;
 			default:
 				print_help(argv[0]);
 				return 0;
@@ -227,7 +236,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals);
 			return 0;
 		default:
 			print_help(argv[0]);

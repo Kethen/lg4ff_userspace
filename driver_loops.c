@@ -202,7 +202,7 @@ static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 	ioctl(uinput_fd, UI_DEV_CREATE);
 }
 
-static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf){
+static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf, struct loop_context *context){
 	// 12 byte report
 	// first 4 bits are for the hat
 	// second 25 bits are the buttons
@@ -274,6 +274,14 @@ static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 			EMIT_INPUT(uinput_fd, EV_KEY, key, button_on? 1: 0);
 		}
 	}
+	if(context->combine_pedals == 1){
+		report_buf[6] = ((uint32_t)0xFF + report_buf[6] - report_buf[7]) >> 1;
+		report_buf[7] = 0x7F;
+	}
+	if(context->combine_pedals == 2){
+		report_buf[6] = ((uint32_t)0xFF + report_buf[6] - report_buf[8]) >> 1;
+		report_buf[8] = 0x7F;
+	}
 	uint16_t x = *(uint16_t *)&report_buf[4];
 	uint16_t last_x = *(uint16_t *)&last_report_buf[4];
 	if(x != last_x){
@@ -293,7 +301,7 @@ static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 	memcpy(last_report_buf, report_buf, 12);
 }
 
-static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf){
+static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf, struct loop_context *context){
 	// 11 byte report
 	// first 4 bits are for the hat
 	// second 22 bits are the buttons (on g25, 19 bits of buttons, 3 bits of vendor)
@@ -363,6 +371,14 @@ static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 			EMIT_INPUT(uinput_fd, EV_KEY, key, button_on? 1: 0);
 		}
 	}
+	if(context->combine_pedals == 1){
+		report_buf[5] = ((uint32_t)0xFF + report_buf[5] - report_buf[6]) >> 1;
+		report_buf[6] = 0x7F;
+	}
+	if(context->combine_pedals == 2){
+		report_buf[5] = ((uint32_t)0xFF + report_buf[5] - report_buf[7]) >> 1;
+		report_buf[7] = 0x7F;
+	}
 	// why don't they align this, what even is a 14bit uint :(
 	uint16_t x = 0;
 	x = x | report_buf[4] << 6;
@@ -407,7 +423,7 @@ static void *input_loop(void *arg){
 					STDERR("failed reading input report from G29, %s\n", error_buf);
 					exit(1);
 				}
-				uinput_g29_emit(loop_context->uinput_fd, report_buf, last_report_buf);
+				uinput_g29_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
 				break;
 			}
 			case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
@@ -419,7 +435,7 @@ static void *input_loop(void *arg){
 					STDERR("failed reading input report from G27, %s\n", error_buf);
 					exit(1);
 				}
-				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf);
+				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
 				break;
 			}
 			default:

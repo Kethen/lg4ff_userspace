@@ -86,9 +86,9 @@ start driver on wheel:
   driver options:
   wheel number to start the driver on, defaults to 1:
     [-n <device number in -l>]
-  gain, independent of application set gain, defaults to 65535
+  gain, independent of application set gain, defaults to 65535:
     [-g <gain, 0-65535>]
-  auto center gain, can be overriden by application, defaults to 0
+  auto center gain, can be overriden by application, defaults to 0:
     [-a <auto center, 0-65535>]
   spring effect level, defaults to 30:
     [-s <spring level, 0-100>]
@@ -96,8 +96,10 @@ start driver on wheel:
     [-d <damper level, 0-100>]
   friction effect level, defaults to 30:
     [-f <friction level, 0-100>]
-  hide all effects except for constant force from application
+  hide all effects except for constant force from application:
     [-H]
+  combine pedals, 0 for not combining any, 1 for combining gas and brake, 2 for combining gas and clutch, defaults to 0:
+    [-c <0/1/2>]
 ```
 
 ### Usage Examples
@@ -150,6 +152,7 @@ damper level: 30
 friction level: 30
 range: 900
 hide effects: false
+combine pedals: 0
 sent range setting command for range 900
 sent auto center disable command
 
