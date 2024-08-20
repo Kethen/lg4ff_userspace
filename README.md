@@ -1,6 +1,6 @@
 ## lg4ff userspace driver for linux
 
-This is an incomplete port of https://github.com/berarma/new-lg4ff to the userspace hidraw + uinput insterface
+This is an incomplete port of https://github.com/berarma/new-lg4ff to the userspace hidraw + uinput interface
 
 Supported devices:
 
