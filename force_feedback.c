@@ -13,11 +13,6 @@
 #include "logging.h"
 #include "force_feedback.h"
 
-#define FF_EFFECT_STARTED 0
-#define FF_EFFECT_ALLSET 1
-#define FF_EFFECT_PLAYING 2
-#define FF_EFFECT_UPDATING 3
-
 #define test_bit(bit, field) (*(field) & (1 << bit))
 #define __set_bit(bit, field) {*(field) = *(field) | (1 << bit);}
 #define __clear_bit(bit, field) {*(field) = *(field) & ~(1 << bit);}

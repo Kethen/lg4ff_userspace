@@ -8,6 +8,11 @@
 
 #define LG4FF_MAX_EFFECTS 16
 
+#define FF_EFFECT_STARTED 0
+#define FF_EFFECT_ALLSET 1
+#define FF_EFFECT_PLAYING 2
+#define FF_EFFECT_UPDATING 3
+
 #if __linux__
 #include <linux/input.h>
 #else

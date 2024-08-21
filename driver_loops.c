@@ -38,6 +38,7 @@
 
 #define SETUP_FFB(f, k){ \
 	ioctl(f, UI_SET_EVBIT, EV_FF); \
+	ioctl(f, UI_SET_EVBIT, EV_FF_STATUS); \
 	ioctl(f, UI_SET_FFBIT, k); \
 }
 
@@ -407,6 +408,7 @@ struct input_loop_context{
 	struct loop_context context;
 	hid_device *read_hid_device;
 	int uinput_fd;
+	pthread_mutex_t *uinput_write_mutex;
 };
 
 static void *input_loop(void *arg){
@@ -423,7 +425,9 @@ static void *input_loop(void *arg){
 					STDERR("failed reading input report from G29, %s\n", error_buf);
 					exit(1);
 				}
+				pthread_mutex_lock(loop_context->uinput_write_mutex);
 				uinput_g29_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
+				pthread_mutex_unlock(loop_context->uinput_write_mutex);
 				break;
 			}
 			case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
@@ -435,7 +439,9 @@ static void *input_loop(void *arg){
 					STDERR("failed reading input report from G27, %s\n", error_buf);
 					exit(1);
 				}
+				pthread_mutex_lock(loop_context->uinput_write_mutex);
 				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
+				pthread_mutex_unlock(loop_context->uinput_write_mutex);
 				break;
 			}
 			default:
@@ -448,6 +454,7 @@ static void *input_loop(void *arg){
 struct output_loop_context{
 	struct loop_context context;
 	int uinput_fd;
+	pthread_mutex_t *uinput_write_mutex;
 	hid_device *write_hid_device;
 	pthread_mutex_t device_mutex;
 	struct lg4ff_device ffb_device;
@@ -464,18 +471,27 @@ struct output_loop_context{
 
 static void *effect_loop(void *arg){
 	struct output_loop_context *loop_context = (struct output_loop_context *)arg;
+	bool effect_was_playing[LG4FF_MAX_EFFECTS] = {0};
+	bool effect_playing[LG4FF_MAX_EFFECTS] = {0};
 	while(true){
 		pthread_mutex_lock(&loop_context->device_mutex);
 		lg4ff_timer(&loop_context->ffb_device);
 
-		#if 0
-		if(loop_context->ffb_device.effects_used == 0){
-			pthread_mutex_unlock(&loop_context->device_mutex);
-			break;
+		for(int i = 0;i < LG4FF_MAX_EFFECTS; i++){
+			effect_playing[i] = (loop_context->ffb_device.states[i].flags & (1 << FF_EFFECT_PLAYING))? true: false;
 		}
-		#endif
-
 		pthread_mutex_unlock(&loop_context->device_mutex);
+
+		for(int i = 0; i < LG4FF_MAX_EFFECTS; i++){
+			if(effect_playing[i] != effect_was_playing[i]){
+				effect_was_playing[i] = effect_playing[i];
+
+				EMIT_INPUT(loop_context->uinput_fd, EV_FF_STATUS, i, effect_playing[i]? FF_STATUS_PLAYING :FF_STATUS_STOPPED);
+				EMIT_INPUT(loop_context->uinput_fd, EV_SYN, SYN_REPORT, 0);
+				pthread_mutex_unlock(loop_context->uinput_write_mutex);
+			}
+		}
+
 		struct timespec duration = {0};
 		duration.tv_nsec = 2 * 1000000;
 		nanosleep(&duration, NULL);
@@ -513,16 +529,6 @@ static void *uinput_poll_loop(void *arg){
 					default:{
 						pthread_mutex_lock(&loop_context->device_mutex);
 						lg4ff_play_effect(&loop_context->ffb_device, e.code, e.value);
-						#if 0
-						if(loop_context->ffb_device.effects_used == 1){
-							pthread_t effect_thread;
-							ret = pthread_create(&effect_thread, NULL, effect_loop, loop_context);
-							if(ret != 0){
-								STDERR("failed starting effect thread, %s\n", strerror(ret));
-								exit(1);
-							}
-						}
-						#endif
 						pthread_mutex_unlock(&loop_context->device_mutex);
 					}
 				}
@@ -538,16 +544,6 @@ static void *uinput_poll_loop(void *arg){
 						upload.retval = lg4ff_upload_effect(&loop_context->ffb_device, &upload.effect, &upload.old);
 						if(loop_context->context.play_on_upload && upload.retval == 0){
 							lg4ff_play_effect(&loop_context->ffb_device, upload.effect.id, 1);
-							#if 0
-							if(loop_context->ffb_device.effects_used == 1){
-								pthread_t effect_thread;
-								ret = pthread_create(&effect_thread, NULL, effect_loop, loop_context);
-								if(ret != 0){
-									STDERR("failed starting effect thread, %s\n", strerror(ret));
-									exit(1);
-								}
-							}
-							#endif
 						}
 						pthread_mutex_unlock(&loop_context->device_mutex);
 						ioctl(loop_context->uinput_fd, UI_END_FF_UPLOAD, &upload);
@@ -609,6 +605,12 @@ void start_loops(struct loop_context context){
 			exit(1);
 	}
 
+	pthread_mutex_t uinput_write_mutex;
+	int ret = pthread_mutex_init(&uinput_write_mutex, NULL);
+	if(ret != 0){
+		STDERR("failed creating uinput write mutex\n");
+		exit(1);
+	}
 
 	set_range(write_hid_device, context.device.product_id, context.range);
 	set_auto_center(write_hid_device, context.device.product_id, context.auto_center);
@@ -616,10 +618,11 @@ void start_loops(struct loop_context context){
 	struct input_loop_context ilc = {
 		.context = context,
 		.read_hid_device = read_hid_device,
-		.uinput_fd = uinput_fd
+		.uinput_fd = uinput_fd,
+		.uinput_write_mutex = &uinput_write_mutex
 	};
 	pthread_t input_thread;
-	int ret = pthread_create(&input_thread, NULL, input_loop, (void *)&ilc);
+	ret = pthread_create(&input_thread, NULL, input_loop, (void *)&ilc);
 	if(ret != 0){
 		STDERR("failed starting input polling thread\n");
 		exit(1);
@@ -628,6 +631,7 @@ void start_loops(struct loop_context context){
 	struct output_loop_context olc = {0};
 	olc.context = context;
 	olc.uinput_fd = uinput_fd;
+	olc.uinput_write_mutex = &uinput_write_mutex;
 	olc.write_hid_device = write_hid_device;
 	olc.ffb_device.effects_used = 0;
 	olc.ffb_device.gain = context.gain;
@@ -652,7 +656,6 @@ void start_loops(struct loop_context context){
 		exit(1);
 	}
 
-	#if 1
 	pthread_t effect_thread;
 	ret = pthread_create(&effect_thread, NULL, effect_loop, (void *)&olc);
 	if(ret != 0){
@@ -660,7 +663,6 @@ void start_loops(struct loop_context context){
 		exit(1);
 	}
 	pthread_join(effect_thread, NULL);
-	#endif
 
 	pthread_join(input_thread, NULL);
 	pthread_join(uinput_poll_thread, NULL);
