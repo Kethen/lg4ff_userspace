@@ -15,7 +15,7 @@ void switch_mode(struct hidraw_device device, uint32_t target_product_id){
 	if(hd == NULL){
 		char error_buf[128];
 		wcstombs(error_buf, hid_error(NULL), sizeof(error_buf));
-		STDERR("failed opening hid device at %s\n", device.backend_path);
+		STDERR("failed opening hid device at %s, %s\n", device.backend_path, error_buf);
 		exit(1);
 	}
 
