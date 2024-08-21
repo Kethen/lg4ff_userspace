@@ -17,4 +17,5 @@ do
 			bash build.sh
 		'
 	mv lg4ff_userspace lg4ff_userspace_${arch}
+	mv lg4ff_userspace_usb lg4ff_userspace_usb_${arch}
 done

@@ -1,0 +1,11 @@
+# /dev/uinput
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+
+# DF, when the PS3 compat hotkeys were used
+KERNEL=="usb*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c294", MODE="0660", TAG+="uaccess"
+# G29
+KERNEL=="usb*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c24f", MODE="0660", TAG+="uaccess"
+# G27
+KERNEL=="usb*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c29b", MODE="0660", TAG+="uaccess"
+# G25
+KERNEL=="usb*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c299", MODE="0660", TAG+="uaccess"

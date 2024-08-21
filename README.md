@@ -1,6 +1,6 @@
 ## lg4ff userspace driver for linux
 
-This is an incomplete port of https://github.com/berarma/new-lg4ff to the userspace hidraw + uinput interface
+This is an incomplete port of https://github.com/berarma/new-lg4ff to userspace using libhidapi and uinput
 
 Supported devices:
 
@@ -54,18 +54,26 @@ dnf install hidapi
 
 OpenSUSE:
 ```
+# hidraw build
 zypper install libhidapi-hidraw0
+# usb build
+zypper install libhidapi-libusb0
 ```
 
 Debian:
 ```
 apt update
+# hidraw build
 apt install libhidapi-hidraw0
+# usb build
+apt install libhidapi-libusb0
 ```
 
-#### 2. For driver mode to work, you'd need access to /dev/hidraw* of your wheel as well as /dev/uinput
+#### 2. For driver mode to work, you'd need access to /dev/hidraw* (/dev/bus/usb/* for usb build) of your wheel as well as /dev/uinput
 
 You are recommended to NOT use this driver as root, instead, copy `60-lg4ff-userspace.rules` from this repository to `/etc/udev/rules.d/`, then run `sudo udevadm control --reload; sudo udevadm trigger` to set correct device node permissions
+
+For usb build, copy `60-lg4ff-userspace-usb.rules` instead.
 
 #### 3. For mode switching to work, you'd have to make sure the in-tree driver is not also performing mode switching to your wheel
 
@@ -160,6 +168,10 @@ sent range setting command for range 900
 sent auto center disable command
 
 ```
+
+#### USB or hidraw build?
+
+hidraw builds likely have lower latency.
 
 ### Disclaimer
 

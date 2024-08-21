@@ -566,20 +566,11 @@ static void *uinput_poll_loop(void *arg){
 }
 
 void start_loops(struct loop_context context){
-	// open hid device twice, once for input, once for output
-	hid_device *read_hid_device = hid_open_path(context.device.backend_path);
-	if(read_hid_device == NULL){
+	hid_device *device = hid_open_path(context.device.backend_path);
+	if(device == NULL){
 		char error_buf[128];
 		wcstombs(error_buf, hid_error(NULL), sizeof(error_buf));
-		STDERR("failed opening hidraw device on backend path %s for reading, %s\n", context.device.backend_path, error_buf);
-		exit(1);
-	}
-
-	hid_device *write_hid_device = hid_open_path(context.device.backend_path);
-	if(write_hid_device == NULL){
-		char error_buf[128];
-		wcstombs(error_buf, hid_error(NULL), sizeof(error_buf));
-		STDERR("failed opening hidraw device on backend path %s for writing, %s\n", context.device.backend_path, error_buf);
+		STDERR("failed opening device on backend path %s, %s\n", context.device.backend_path, error_buf);
 		exit(1);
 	}
 
@@ -612,12 +603,12 @@ void start_loops(struct loop_context context){
 		exit(1);
 	}
 
-	set_range(write_hid_device, context.device.product_id, context.range);
-	set_auto_center(write_hid_device, context.device.product_id, context.auto_center);
+	set_range(device, context.device.product_id, context.range);
+	set_auto_center(device, context.device.product_id, context.auto_center);
 
 	struct input_loop_context ilc = {
 		.context = context,
-		.read_hid_device = read_hid_device,
+		.read_hid_device = device,
 		.uinput_fd = uinput_fd,
 		.uinput_write_mutex = &uinput_write_mutex
 	};
@@ -632,14 +623,14 @@ void start_loops(struct loop_context context){
 	olc.context = context;
 	olc.uinput_fd = uinput_fd;
 	olc.uinput_write_mutex = &uinput_write_mutex;
-	olc.write_hid_device = write_hid_device;
+	olc.write_hid_device = device;
 	olc.ffb_device.effects_used = 0;
 	olc.ffb_device.gain = context.gain;
 	olc.ffb_device.app_gain = 0xffff;
 	olc.ffb_device.spring_level = context.spring_level;
 	olc.ffb_device.damper_level = context.damper_level;
 	olc.ffb_device.friction_level = context.friction_level;
-	olc.ffb_device.hid_handle = write_hid_device;
+	olc.ffb_device.hid_handle = device;
 
 	lg4ff_init_slots(&olc.ffb_device);
 
