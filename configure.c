@@ -125,7 +125,7 @@ int set_range(hid_device *hd, uint16_t product_id, int range){
 	}
 }
 
-static void set_autocenter_dfex(hid_device *hd, int gain)
+static void set_autocenter_ffex(hid_device *hd, int gain)
 {
 	uint8_t cmd[7];
 
@@ -133,9 +133,9 @@ static void set_autocenter_dfex(hid_device *hd, int gain)
 
 	cmd[0] = 0xfe;
 	cmd[1] = 0x03;
-	cmd[2] = gain >> 14;
-	cmd[3] = gain >> 14;
-	cmd[4] = gain;
+	cmd[2] = (uint16_t)gain >> 14;
+	cmd[3] = (uint16_t)gain >> 14;
+	cmd[4] = (uint16_t)gain;
 	cmd[5] = 0x00;
 	cmd[6] = 0x00;
 
@@ -230,7 +230,8 @@ int set_auto_center(hid_device *hd, uint16_t product_id, int gain){
 			set_autocenter_default(hd, gain);
 			return 0;
 		case USB_DEVICE_ID_LOGITECH_WHEEL:
-			set_autocenter_dfex(hd, gain);
+			// XXX how to tell dfex/ffex on hidraw? Does it have a different product string?
+			set_autocenter_default(hd, gain);
 			return 0;
 		default:
 			STDERR("auto center adjustment was not implemented for %s(0x%04x)\n", get_name_by_product_id(product_id), product_id);
