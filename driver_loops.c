@@ -76,9 +76,9 @@ static void uinput_g29_setup(int uinput_fd, struct loop_context *context){
 	// Z on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
 	// Rz on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
@@ -128,9 +128,9 @@ static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
 	// Z on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
 	// Rz on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
@@ -179,9 +179,9 @@ static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 	// Z on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255)
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255)
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255)
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255)
 	// Rz on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
@@ -230,11 +230,11 @@ static void uinput_dfgt_setup(int uinput_fd, struct loop_context *context){
 	// Z on 255 0
 	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255)
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255)
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255)
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255)
 	// Rz is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
 	// HAT/dpad
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
@@ -279,11 +279,11 @@ static void uinput_dfp_setup(int uinput_fd, struct loop_context *context){
 	// Y on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
 	// Z is a dummy
-	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
 	// Rz on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
@@ -332,9 +332,9 @@ static void uinput_dfex_setup(int uinput_fd, struct loop_context *context){
 	// Z on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
 	// Rx is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
 	// Ry is a dummy
-	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	//SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
 	// Rz on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
