@@ -37,6 +37,11 @@ void switch_mode(struct hidraw_device device, uint32_t target_product_id){
 			ret = hid_write(hd, cmd, sizeof(cmd));
 			break;
 		}
+		case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:{
+			uint8_t cmd[] = {0xf8, 0x09, 0x03, 0x01, 0x00, 0x00, 0x00};
+			ret = hid_write(hd, cmd, sizeof(cmd));
+			break;
+		}
 		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:{
 			uint8_t cmd[] = {0xf8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 			ret = hid_write(hd, cmd, sizeof(cmd));

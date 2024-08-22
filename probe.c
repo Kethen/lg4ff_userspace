@@ -23,7 +23,7 @@ int find_wheels(struct hidraw_device *hidraw_devices, int buffer_size){
 			cur = cur->next;
 			continue;
 		}
-		for(int i = 0;i < sizeof(supported_ids) / sizeof(int); i++){
+		for(int i = 0;i < sizeof(supported_ids) / sizeof(uint32_t); i++){
 			if((int16_t)cur->product_id == (int16_t)supported_ids[i]){
 				hidraw_devices[wheels_found].vendor_id = (uint16_t)cur->vendor_id;
 				hidraw_devices[wheels_found].product_id = (uint16_t)cur->product_id;

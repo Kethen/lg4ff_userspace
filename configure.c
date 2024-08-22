@@ -113,6 +113,9 @@ int set_range(hid_device *hd, uint16_t product_id, int range){
 		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
 			set_range_g25(hd, range);
 			return 0;
+		case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:
+			set_range_g25(hd, range);
+			return 0;
 		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
 			set_range_dfp(hd, range);
 			return 0;
@@ -194,6 +197,9 @@ int set_auto_center(hid_device *hd, uint16_t product_id, int gain){
 			set_autocenter_default(hd, gain);
 			return 0;
 		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
+			set_autocenter_default(hd, gain);
+			return 0;
+		case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:
 			set_autocenter_default(hd, gain);
 			return 0;
 		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
