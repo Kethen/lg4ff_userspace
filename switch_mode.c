@@ -37,6 +37,11 @@ void switch_mode(struct hidraw_device device, uint32_t target_product_id){
 			ret = hid_write(hd, cmd, sizeof(cmd));
 			break;
 		}
+		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:{
+			uint8_t cmd[] = {0xf8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+			ret = hid_write(hd, cmd, sizeof(cmd));
+			break;
+		}
 		default:{
 			STDERR("unknown product id 0x%04x for mode switching\n", target_product_id);
 			exit(1);

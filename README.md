@@ -4,6 +4,7 @@ This is an incomplete port of https://github.com/berarma/new-lg4ff to userspace 
 
 Supported devices:
 
+- Logitech Drive Force Pro ((only tested on a g29 in dfp mode))
 - Logitech G25 (only tested on a g29 in g25 mode)
 - Logitech G27 (only tested on a g29 in g27 mode)
 - Logitech G29 (with the PC switch or the PS3 key bombo)

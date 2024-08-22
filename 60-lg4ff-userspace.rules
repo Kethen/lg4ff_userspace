@@ -9,3 +9,5 @@ KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c24f", MODE="0660
 KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c29b", MODE="0660", TAG+="uaccess"
 # G25
 KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c299", MODE="0660", TAG+="uaccess"
+# DFP
+KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c298", MODE="0660", TAG+="uaccess"

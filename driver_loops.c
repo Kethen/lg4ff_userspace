@@ -71,12 +71,17 @@ static void uinput_g29_setup(int uinput_fd, struct loop_context *context){
 
 	// X axis on 0-65535, wine seems to convert them by name during evdev -> hid
 	SETUP_AXIS(uinput_fd, ABS_X, 0, 65535);
-	// Z on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
-	// Rz on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 	// Y on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+	// Z on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rx is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	// Ry is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
+
 
 	// HAT/dpad
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
@@ -118,12 +123,16 @@ static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
 
 	// X axis on 0-16383, wine seems to convert them by name during evdev -> hid
 	SETUP_AXIS(uinput_fd, ABS_X, 0, 16383);
-	// Z on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
-	// Rz on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 	// Y on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+	// Z on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rx is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	// Ry is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
 	// HAT/dpad
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
@@ -157,7 +166,7 @@ static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
 }
 
 static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
-	// 22 buttons numerated from 1 to 22 on hid
+	// 19 buttons numerated from 1 to 19 on hid
 	for(int i = 0;i < 19; i++){
 		int key = BTN_TRIGGER_HAPPY + i;
 		SETUP_KEY(uinput_fd, key);
@@ -165,12 +174,16 @@ static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 
 	// X axis on 0-16383, wine seems to convert them by name during evdev -> hid
 	SETUP_AXIS(uinput_fd, ABS_X, 0, 16383);
-	// Z on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
-	// Rz on 255 - 0
-	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 	// Y on 255 - 0
 	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+	// Z on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rx is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255)
+	// Ry is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255)
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
 
 	// HAT/dpad
 	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
@@ -198,6 +211,57 @@ static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 	usetup.id.product = USB_DEVICE_ID_LOGITECH_G25_WHEEL;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
 	strcpy(usetup.name, "userspace G25");
+
+	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
+	ioctl(uinput_fd, UI_DEV_CREATE);
+}
+
+static void uinput_dfp_setup(int uinput_fd, struct loop_context *context){
+	// 14 buttons numerated from 1 to 14 on hid
+	for(int i = 0;i < 14; i++){
+		int key = BTN_TRIGGER_HAPPY + i;
+		SETUP_KEY(uinput_fd, key);
+	}
+
+	// X axis on 0-16383, wine seems to convert them by name during evdev -> hid
+	SETUP_AXIS(uinput_fd, ABS_X, 0, 16383);;
+	// Y on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_Y, 0, 255);
+	// Z is a dummy
+	SETUP_AXIS(uinput_fd, ABS_Z, 0, 255);
+	// Rx is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RX, 0, 255);
+	// Ry is a dummy
+	SETUP_AXIS(uinput_fd, ABS_RY, 0, 255);
+	// Rz on 255 - 0
+	SETUP_AXIS(uinput_fd, ABS_RZ, 0, 255);
+
+	// HAT/dpad
+	SETUP_AXIS(uinput_fd, ABS_HAT0X, -1, 1);
+	SETUP_AXIS(uinput_fd, ABS_HAT0Y, -1, 1);
+
+	// ffb
+	SETUP_FFB(uinput_fd, FF_CONSTANT);
+	if(!context->hide_effects){
+		SETUP_FFB(uinput_fd, FF_SPRING);
+		SETUP_FFB(uinput_fd, FF_DAMPER);
+		SETUP_FFB(uinput_fd, FF_AUTOCENTER);
+		SETUP_FFB(uinput_fd, FF_PERIODIC);
+		SETUP_FFB(uinput_fd, FF_SINE);
+		SETUP_FFB(uinput_fd, FF_SQUARE);
+		SETUP_FFB(uinput_fd, FF_TRIANGLE);
+		SETUP_FFB(uinput_fd, FF_SAW_UP);
+		SETUP_FFB(uinput_fd, FF_SAW_DOWN);
+		SETUP_FFB(uinput_fd, FF_RAMP);
+		SETUP_FFB(uinput_fd, FF_FRICTION);
+	}
+
+	struct uinput_setup usetup = {0};
+	usetup.id.bustype = BUS_USB;
+	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
+	usetup.id.product = USB_DEVICE_ID_LOGITECH_DFP_WHEEL;
+	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
+	strcpy(usetup.name, "userspace Drive Force Pro");
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -404,6 +468,101 @@ static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 	memcpy(last_report_buf, report_buf, 11);
 }
 
+static void uinput_dfp_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf, struct loop_context *context){
+	// 8 byte report
+	// first 14 bits of X
+	// 14 bits of buttons
+	// 4 bits of hat
+	// 8 bits of Y
+	// 8 bits or Rz
+
+	uint16_t x = 0;
+	x = x | report_buf[0];
+	x = x | (report_buf[1] & 0x3F) << 8;
+	uint16_t last_x = 0;
+	last_x = last_x | last_report_buf[0];
+	last_x = last_x | (last_report_buf[1] & 0x3F) << 8;
+	if(x != last_x){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_X, x);
+	}
+
+	for(int i = 0;i < 14; i++){
+		int key = BTN_TRIGGER_HAPPY + i;
+		int bit_num = i + 14;
+		bool button_on = get_bit(report_buf, bit_num, 8);
+		bool button_was_on = get_bit(last_report_buf, bit_num, 8);
+		if(button_on != button_was_on){
+			EMIT_INPUT(uinput_fd, EV_KEY, key, button_on? 1: 0);
+		}
+	}
+
+	uint8_t hat = report_buf[3] >> 4;
+	uint8_t last_hat = last_report_buf[3] >> 4;
+	if(hat != last_hat){
+		switch(hat){
+			case 0:
+				// up only
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+			case 1:
+				// up and right
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 2:
+				// right only
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 3:
+				// down right
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 1);
+				break;
+			case 4:
+				// down
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+			case 5:
+				// down left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 6:
+				// left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 7:
+				// up left
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, -1);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, -1);
+				break;
+			case 8:
+				// center
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0Y, 0);
+				EMIT_INPUT(uinput_fd, EV_ABS, ABS_HAT0X, 0);
+				break;
+		}
+	}
+
+	if(context->combine_pedals == 1){
+		report_buf[5] = ((uint32_t)0xFF + report_buf[5] - report_buf[6]) >> 1;
+		report_buf[6] = 0x7F;
+	}
+	if(report_buf[5] != last_report_buf[5]){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_Y, report_buf[5]);
+	}
+	if(report_buf[6] != last_report_buf[6]){
+		EMIT_INPUT(uinput_fd, EV_ABS, ABS_RZ, report_buf[6]);
+	}
+
+	EMIT_INPUT(uinput_fd, EV_SYN, SYN_REPORT, 0);
+	memcpy(last_report_buf, report_buf, 8);
+}
+
 struct input_loop_context{
 	struct loop_context context;
 	hid_device *read_hid_device;
@@ -436,11 +595,24 @@ static void *input_loop(void *arg){
 				if(bytes_read == -1){
 					char error_buf[128];
 					wcstombs(error_buf, hid_error(loop_context->read_hid_device), sizeof(error_buf));
-					STDERR("failed reading input report from G27, %s\n", error_buf);
+					STDERR("failed reading input report from G25/G27, %s\n", error_buf);
 					exit(1);
 				}
 				pthread_mutex_lock(loop_context->uinput_write_mutex);
 				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
+				pthread_mutex_unlock(loop_context->uinput_write_mutex);
+				break;
+			}
+			case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:{
+				int bytes_read = hid_read(loop_context->read_hid_device, report_buf, 8);
+				if(bytes_read == -1){
+					char error_buf[128];
+					wcstombs(error_buf, hid_error(loop_context->read_hid_device), sizeof(error_buf));
+					STDERR("failed reading input report from Drive Force Pro, %s\n", error_buf);
+					exit(1);
+				}
+				pthread_mutex_lock(loop_context->uinput_write_mutex);
+				uinput_dfp_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
 				pthread_mutex_unlock(loop_context->uinput_write_mutex);
 				break;
 			}
@@ -590,6 +762,9 @@ void start_loops(struct loop_context context){
 			break;
 		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
 			uinput_g25_setup(uinput_fd, &context);
+			break;
+		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
+			uinput_dfp_setup(uinput_fd, &context);
 			break;
 		default:
 			STDERR("uinput device for %s(0x%04x) is not implemented\n", get_name_by_product_id(context.device.product_id), context.device.product_id);

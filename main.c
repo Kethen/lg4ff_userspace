@@ -29,7 +29,7 @@ static void print_help(char *binary_name){
 	STDOUT("display this message:\n");
 	STDOUT("  %s -h\n", binary_name);
 	STDOUT("reboot wheel into another mode:\n");
-	STDOUT("  %s -m <g25/g27/g29> [-n device number in -l]\n", binary_name);
+	STDOUT("  %s -m <dfp/g25/g27/g29> [-n device number in -l]\n", binary_name);
 	STDOUT("start driver on wheel:\n");
 	STDOUT("  %s -w [driver options]\n", binary_name);
 	STDOUT("  driver options:\n");
@@ -59,28 +59,16 @@ enum operation_mode{
 };
 
 enum wheel_mode{
-	WHEEL_MODE_G25 = 0,
+	WHEEL_MODE_DFP = 0,
+	WHEEL_MODE_G25,
 	WHEEL_MODE_G27,
 	WHEEL_MODE_G29
 };
 
-static const char *get_wheel_mode_name(int mode){
-	switch(mode){
-		case WHEEL_MODE_G25:
-			return "G25";
-		case WHEEL_MODE_G27:
-			return "G27";
-		case WHEEL_MODE_G29:
-			return "G29";
-		default:
-			STDERR("bad wheel mode %d\n", mode);
-			exit(1);
-	}
-	return NULL;
-}
-
 static const uint16_t get_wheel_mode_product_id(int mode){
 	switch(mode){
+		case WHEEL_MODE_DFP:
+			return USB_DEVICE_ID_LOGITECH_DFP_WHEEL;
 		case WHEEL_MODE_G25:
 			return USB_DEVICE_ID_LOGITECH_G25_WHEEL;
 		case WHEEL_MODE_G27:
@@ -91,6 +79,11 @@ static const uint16_t get_wheel_mode_product_id(int mode){
 	STDERR("unknown wheel mode %d\n", mode);
 	exit(1);
 	return 0;
+}
+
+static const char *get_wheel_mode_name(int mode){
+	int product_id = get_wheel_mode_product_id(mode);
+	return get_name_by_product_id(product_id);
 }
 
 static int reboot_wheel(struct hidraw_device *hidraw_devices, int wheels, int wheel_num, int target_mode){
@@ -184,7 +177,9 @@ int main(int argc, char** argv){
 				break;
 			case 'm':
 				mode = OPERATION_MODE_REBOOT;
-				if(strcmp(optarg, "g25") == 0){
+				if(strcmp(optarg, "dfp") == 0){
+					wmode = WHEEL_MODE_DFP;
+				}else if(strcmp(optarg, "g25") == 0){
 					wmode = WHEEL_MODE_G25;
 				}else if(strcmp(optarg, "g27") == 0){
 					wmode = WHEEL_MODE_G27;
