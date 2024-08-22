@@ -4,8 +4,9 @@ This is an incomplete port of https://github.com/berarma/new-lg4ff to userspace 
 
 Supported devices:
 
-- Logitech Drive Force Pro (only tested on a g29 in dfp mode)
-- Logitech Drive Force GT (only tested on a g29 in dfgt mode)
+- Logitech Dricing Force EX (only tested on a g29 in dfex mode)
+- Logitech Driving Force Pro (only tested on a g29 in dfp mode)
+- Logitech Driving Force GT (only tested on a g29 in dfgt mode)
 - Logitech G25 (only tested on a g29 in g25 mode)
 - Logitech G27 (only tested on a g29 in g27 mode)
 - Logitech G29 (with the PC switch or the PS3 key bombo)
@@ -90,7 +91,7 @@ listing devices:
 display this message:
   ./lg4ff_userspace -h
 reboot wheel into another mode:
-  ./lg4ff_userspace -m <dfp/dfgt/g25/g27/g29> [-n device number in -l]
+  ./lg4ff_userspace -m <dfex/dfp/dfgt/g25/g27/g29> [-n device number in -l]
 start driver on wheel:
   ./lg4ff_userspace -w [driver options]
   driver options:

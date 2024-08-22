@@ -29,7 +29,7 @@ static void print_help(char *binary_name){
 	STDOUT("display this message:\n");
 	STDOUT("  %s -h\n", binary_name);
 	STDOUT("reboot wheel into another mode:\n");
-	STDOUT("  %s -m <dfp/dfgt/g25/g27/g29> [-n device number in -l]\n", binary_name);
+	STDOUT("  %s -m <dfex/dfp/dfgt/g25/g27/g29> [-n device number in -l]\n", binary_name);
 	STDOUT("start driver on wheel:\n");
 	STDOUT("  %s -w [driver options]\n", binary_name);
 	STDOUT("  driver options:\n");
@@ -59,7 +59,8 @@ enum operation_mode{
 };
 
 enum wheel_mode{
-	WHEEL_MODE_DFP = 0,
+	WHEEL_MODE_DFEX = 0,
+	WHEEL_MODE_DFP,
 	WHEEL_MODE_DFGT,
 	WHEEL_MODE_G25,
 	WHEEL_MODE_G27,
@@ -68,6 +69,8 @@ enum wheel_mode{
 
 static const uint16_t get_wheel_mode_product_id(int mode){
 	switch(mode){
+		case WHEEL_MODE_DFEX:
+			return USB_DEVICE_ID_LOGITECH_WHEEL;
 		case WHEEL_MODE_DFP:
 			return USB_DEVICE_ID_LOGITECH_DFP_WHEEL;
 		case WHEEL_MODE_DFGT:
@@ -180,7 +183,9 @@ int main(int argc, char** argv){
 				break;
 			case 'm':
 				mode = OPERATION_MODE_REBOOT;
-				if(strcmp(optarg, "dfp") == 0){
+				if(strcmp(optarg, "dfex") == 0){
+					wmode = WHEEL_MODE_DFEX;
+				}else if(strcmp(optarg, "dfp") == 0){
 					wmode = WHEEL_MODE_DFP;
 				}else if(strcmp(optarg, "dfgt") == 0){
 					wmode = WHEEL_MODE_DFGT;
@@ -190,6 +195,9 @@ int main(int argc, char** argv){
 					wmode = WHEEL_MODE_G27;
 				}else if(strcmp(optarg, "g29") == 0){
 					wmode = WHEEL_MODE_G29;
+				}else{
+					STDERR("unknown wheel mode %s\n", optarg);
+					exit(1);
 				}
 				break;
 			case 'n':

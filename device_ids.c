@@ -9,11 +9,11 @@ const char *get_name_by_product_id(int id){
 		case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
 			return "G25";
 		case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:
-			return "Drive Force GT";
+			return "Driving Force GT";
 		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
-			return "Drive Force Pro";
+			return "Driving Force Pro";
 		case USB_DEVICE_ID_LOGITECH_WHEEL:
-			return "Drive Force";
+			return "Driving Force EX";
 	}
 	return "unknown";
 }

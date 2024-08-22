@@ -125,6 +125,30 @@ int set_range(hid_device *hd, uint16_t product_id, int range){
 	}
 }
 
+static void set_autocenter_dfex(hid_device *hd, int gain)
+{
+	uint8_t cmd[7];
+
+	gain = gain * 90 / 65535;
+
+	cmd[0] = 0xfe;
+	cmd[1] = 0x03;
+	cmd[2] = gain >> 14;
+	cmd[3] = gain >> 14;
+	cmd[4] = gain;
+	cmd[5] = 0x00;
+	cmd[6] = 0x00;
+
+	int ret = hid_write(hd, cmd, sizeof(cmd));
+	if(ret == -1){
+		char error_buf[128];
+		wcstombs(error_buf, hid_error(hd), sizeof(error_buf));
+		STDERR("failed sending auto center gain command, %s\n", error_buf);
+		exit(1);
+	}
+	STDOUT("sent auto center gain command for gain %d\n", gain);
+}
+
 static void set_autocenter_default(hid_device *hd, int gain){
 	// range check was done on main
 
@@ -204,6 +228,9 @@ int set_auto_center(hid_device *hd, uint16_t product_id, int gain){
 			return 0;
 		case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
 			set_autocenter_default(hd, gain);
+			return 0;
+		case USB_DEVICE_ID_LOGITECH_WHEEL:
+			set_autocenter_dfex(hd, gain);
 			return 0;
 		default:
 			STDERR("auto center adjustment was not implemented for %s(0x%04x)\n", get_name_by_product_id(product_id), product_id);
