@@ -17,7 +17,7 @@
 #define __set_bit(bit, field) {*(field) = *(field) | (1 << bit);}
 #define __clear_bit(bit, field) {*(field) = *(field) & ~(1 << bit);}
 
-#define fixp_sin16(in) (int16_t)(sin((double)(in) * (double)M_PI / 180.0) * 0x7fff)
+#define sin16(in) (int16_t)(sin((double)(in) * (double)M_PI / 180.0))
 
 #define time_after_eq(a, b) (a >= b)
 #define time_before(a, b) (a < b)
@@ -117,7 +117,7 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const uint64_t 
 		if (!test_bit(FF_EFFECT_UPDATING, &state->flags)) {
 			state->updated_at = state->play_at;
 		}
-		state->direction_gain = fixp_sin16(effect->direction * 360 / 0x10000);
+		state->direction_gain = sin16(effect->direction * 360 / 0x10000);
 		if (effect->type == FF_PERIODIC) {
 			state->phase_adj = effect->u.periodic.phase * 360 / effect->u.periodic.period;
 		}
@@ -130,7 +130,7 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const uint64_t 
 	if (test_bit(FF_EFFECT_UPDATING, &state->flags)) {
 		__clear_bit(FF_EFFECT_PLAYING, &state->flags);
 		state->play_at = state->updated_at + effect->replay.delay;
-		state->direction_gain = fixp_sin16(effect->direction * 360 / 0x10000);
+		state->direction_gain = sin16(effect->direction * 360 / 0x10000);
 		if (effect->replay.length) {
 			state->stop_at = state->updated_at + effect->replay.length;
 		}
@@ -182,7 +182,7 @@ static int32_t lg4ff_calculate_constant(struct lg4ff_effect_state *state)
 		}
 	}
 
-	return state->direction_gain * level / 0x7fff;
+	return state->direction_gain * level;
 }
 
 static int32_t lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
@@ -209,7 +209,7 @@ static int32_t lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
 		level = ramp->start_level + ((t * state->slope) >> 16);
 	}
 
-	return state->direction_gain * level / 0x7fff;
+	return state->direction_gain * level;
 }
 
 static int32_t lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
@@ -233,7 +233,7 @@ static int32_t lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 
 	switch (periodic->waveform) {
 		case FF_SINE:
-			level += fixp_sin16(state->phase) * magnitude / 0x7fff;
+			level += sin16(state->phase) * magnitude;
 			break;
 		case FF_SQUARE:
 			level += (state->phase < 180 ? 1 : -1) * magnitude;
@@ -249,7 +249,7 @@ static int32_t lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 			break;
 	}
 
-	return state->direction_gain * level / 0x7fff;
+	return state->direction_gain * level;
 }
 
 static void lg4ff_calculate_spring(struct lg4ff_effect_state *state, struct lg4ff_effect_parameters *parameters)
