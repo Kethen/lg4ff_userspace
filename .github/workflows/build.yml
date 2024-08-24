@@ -1,0 +1,44 @@
+name: Build package
+
+on: [ push, pull_request, workflow_dispatch ]
+
+# written referencing apollo save tool psp's CI
+
+jobs:
+  build_pkg:
+    runs-on: ubuntu-22.04
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install podman and qemu
+      run: |
+        sudo apt update
+        sudo apt install -y qemu-user-static podman
+
+    - name: Set env vars
+      run: |
+        echo "sha_name=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
+    - name: Build
+      run: |
+        bash build_podman.sh
+
+    - name: Push package artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: lg4ff_userspace_${{ env.sha_name }}
+        path: |
+           lg4ff_userspace_386
+           lg4ff_userspace_usb_386
+           lg4ff_userspace_amd64
+           lg4ff_userspace_usb_amd64
+           lg4ff_userspace_arm64
+           lg4ff_userspace_usb_arm64
+           lg4ff_userspace_arm
+           lg4ff_userspace_usb_arm
+           60-lg4ff-userspace.rules
+           60-lg4ff-userspace-usb.rules
+           logitech-hid.conf
+        if-no-files-found: error
