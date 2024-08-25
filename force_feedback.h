@@ -116,7 +116,7 @@ struct lg4ff_effect_state{
 	uint32_t cmd_start_count;
 	#endif
 
-	int32_t direction_gain;
+	double direction_gain;
 	int32_t slope;
 };
 
