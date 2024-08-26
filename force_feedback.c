@@ -12,6 +12,7 @@
 
 #include "logging.h"
 #include "force_feedback.h"
+#include "log_effect.h"
 
 #define test_bit(bit, field) (*(field) & (1 << bit))
 #define __set_bit(bit, field) {*(field) = *(field) | (1 << bit);}
@@ -42,7 +43,7 @@ uint64_t get_time_ms(){
 	return tp.tv_nsec / 1000000 + tp.tv_sec * 1000;
 }
 
-int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old)
+int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log)
 {
 	struct lg4ff_effect_state *state;
 	uint64_t now = get_time_ms();
@@ -64,10 +65,15 @@ int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, s
 		state->updated_at = now;
 	}
 
+	if(log){
+		STDOUT("--upload--\n");
+		log_effect(effect);
+	}
+
 	return 0;
 }
 
-int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value)
+int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value, bool log)
 {
 	struct lg4ff_effect_state *state;
 	uint64_t now = get_time_ms();
@@ -83,6 +89,10 @@ int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value)
 		__set_bit(FF_EFFECT_STARTED, &state->flags);
 		state->start_at = now;
 		state->count = value;
+		if(log){
+			STDOUT("--play--\n");
+			log_effect(&state->effect);
+		}
 	} else {
 		if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
 			STOP_EFFECT(state);

@@ -113,6 +113,8 @@ start driver on wheel:
     [-c <0/1/2>]
   play effect on upload, for 'Fast' update type in BeamNG.drive:
     [-u]
+  log effects
+    [-v]
 ```
 
 ### Usage Examples
@@ -167,6 +169,7 @@ range: 900
 hide effects: false
 combine pedals: 0
 play effect on upload: false
+log effects: false
 sent range setting command for range 900
 sent auto center disable command
 

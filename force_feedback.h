@@ -92,6 +92,25 @@ struct ff_effect{
 	} u;
 };
 
+#define FF_RUMBLE 0x50
+#define FF_PERIODIC 0x51
+#define FF_CONSTANT 0x52
+#define FF_SPRING 0x53
+#define FF_FRICTION 0x54
+#define FF_DAMPER 0x55
+#define FF_INERTIA 0x56
+#define FF_RAMP 0x57
+
+#define FF_SQUARE 0x58
+#define FF_TRIANGLE 0x59
+#define FF_SINE 0x5a
+#define FF_SAW_UP 0x5b
+#define FF_SAW_DOWN 0x5c
+#define FF_CUSTOM 0x5d
+
+#define FF_GAIN 0x60
+#define FF_AUTOCENTER 0x61
+
 #endif
 
 // ported from https://github.com/berarma/new-lg4ff/blob/master/hid-lg4ff.c
@@ -157,8 +176,8 @@ struct lg4ff_device{
 };
 
 void lg4ff_init_slots(struct lg4ff_device *device);
-int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old);
-int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value);
+int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log);
+int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value, bool log);
 int lg4ff_timer(struct lg4ff_device *device);
 
 #endif

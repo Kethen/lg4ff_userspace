@@ -2,14 +2,18 @@
 #define __LOGGING_H
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <unistd.h>
 
 #define STDOUT(...){ \
-	fprintf(stdout, __VA_ARGS__); \
+	char _log_buf[512]; \
+	int _log_len = sprintf(_log_buf, __VA_ARGS__); \
+	write(1, _log_buf, _log_len); \
 }
 
 #define STDERR(...){ \
-	fprintf(stderr, __VA_ARGS__); \
+	char _log_buf[512]; \
+	int _log_len = sprintf(_log_buf, __VA_ARGS__); \
+	write(2, _log_buf, _log_len); \
 }
 
 #endif

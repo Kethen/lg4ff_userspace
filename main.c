@@ -50,7 +50,9 @@ static void print_help(char *binary_name){
 	STDOUT("  combine pedals, 0 for not combining any, 1 for combining gas and brake, 2 for combining gas and clutch, defaults to 0:\n");
 	STDOUT("    [-c <0/1/2>]\n");
 	STDOUT("  play effect on upload, for 'Fast' update type in BeamNG.drive:\n");
-	STDOUT("    [-u]\n")
+	STDOUT("    [-u]\n");
+	STDOUT("  log effects\n");
+	STDOUT("    [-v]\n");
 }
 
 enum operation_mode{
@@ -111,7 +113,9 @@ static int start_driver(
 		int range,
 		bool hide_effects,
 		int combine_pedals,
-		bool play_on_upload){
+		bool play_on_upload,
+		bool log_effects
+){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
 	STDOUT("gain: %d\n", gain);
@@ -123,6 +127,7 @@ static int start_driver(
 	STDOUT("hide effects: %s\n", hide_effects? "true": "false");
 	STDOUT("combine pedals: %d\n", combine_pedals);
 	STDOUT("play effect on upload: %s\n", play_on_upload? "true" : "false");
+	STDOUT("log effects: %s\n", log_effects? "true" : "false");
 
 	struct loop_context lc = {
 		.device = hidraw_devices[wheel_num - 1],
@@ -134,7 +139,8 @@ static int start_driver(
 		.range = range,
 		.hide_effects = hide_effects,
 		.combine_pedals = combine_pedals,
-		.play_on_upload = play_on_upload
+		.play_on_upload = play_on_upload,
+		.log_effects = log_effects
 	};
 	start_loops(lc);
 
@@ -163,8 +169,9 @@ int main(int argc, char** argv){
 	bool hide_effects = false;
 	int combine_pedals = 0;
 	bool play_on_upload = false;
+	bool log_effects = false;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:u")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:uv")) != -1){
 		#define CLAMP_ARG_VALUE(name, field, min, max){ \
 			if(field > max){ \
 				field = max; \
@@ -239,6 +246,9 @@ int main(int argc, char** argv){
 			case 'u':
 				play_on_upload = true;
 				break;
+			case 'v':
+				log_effects = true;
+				break;
 			default:
 				print_help(argv[0]);
 				return 0;
@@ -264,7 +274,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals, play_on_upload);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals, play_on_upload, log_effects);
 			return 0;
 		default:
 			print_help(argv[0]);
