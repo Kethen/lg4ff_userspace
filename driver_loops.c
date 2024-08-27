@@ -1027,10 +1027,7 @@ static void *uinput_poll_loop(void *arg){
 						upload.request_id = e.value;
 						ioctl(loop_context->uinput_fd, UI_BEGIN_FF_UPLOAD, &upload);
 						pthread_mutex_lock(&loop_context->device_mutex);
-						upload.retval = lg4ff_upload_effect(&loop_context->ffb_device, &upload.effect, &upload.old, loop_context->context.log_effects);
-						if(loop_context->context.play_on_upload && upload.retval == 0){
-							lg4ff_play_effect(&loop_context->ffb_device, upload.effect.id, 1, loop_context->context.log_effects);
-						}
+						upload.retval = lg4ff_upload_effect(&loop_context->ffb_device, &upload.effect, &upload.old, loop_context->context.log_effects, loop_context->context.play_on_upload);
 						pthread_mutex_unlock(&loop_context->device_mutex);
 						ioctl(loop_context->uinput_fd, UI_END_FF_UPLOAD, &upload);
 						break;

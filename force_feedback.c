@@ -43,7 +43,37 @@ uint64_t get_time_ms(){
 	return tp.tv_nsec / 1000000 + tp.tv_sec * 1000;
 }
 
-int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log)
+int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value, bool log)
+{
+	struct lg4ff_effect_state *state;
+	uint64_t now = get_time_ms();
+
+	state = &device->states[effect_id];
+
+	if (value > 0) {
+		if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
+			STOP_EFFECT(state);
+		} else {
+			device->effects_used++;
+		}
+		__set_bit(FF_EFFECT_STARTED, &state->flags);
+		state->start_at = now;
+		state->count = value;
+		if(log){
+			STDOUT("--play--\n");
+			log_effect(&state->effect);
+		}
+	} else {
+		if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
+			STOP_EFFECT(state);
+			device->effects_used--;
+		}
+	}
+
+	return 0;
+}
+
+int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log, bool play_on_upload)
 {
 	struct lg4ff_effect_state *state;
 	uint64_t now = get_time_ms();
@@ -70,34 +100,8 @@ int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, s
 		log_effect(effect);
 	}
 
-	return 0;
-}
-
-int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value, bool log)
-{
-	struct lg4ff_effect_state *state;
-	uint64_t now = get_time_ms();
-
-	state = &device->states[effect_id];
-
-	if (value > 0) {
-		if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
-			STOP_EFFECT(state);
-		} else {
-			device->effects_used++;
-		}
-		__set_bit(FF_EFFECT_STARTED, &state->flags);
-		state->start_at = now;
-		state->count = value;
-		if(log){
-			STDOUT("--play--\n");
-			log_effect(&state->effect);
-		}
-	} else {
-		if (test_bit(FF_EFFECT_STARTED, &state->flags)) {
-			STOP_EFFECT(state);
-			device->effects_used--;
-		}
+	if(play_on_upload && !test_bit(FF_EFFECT_PLAYING, &state->flags)){
+		lg4ff_play_effect(device, effect->id, 1, log);
 	}
 
 	return 0;

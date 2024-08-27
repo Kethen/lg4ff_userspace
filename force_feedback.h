@@ -176,7 +176,7 @@ struct lg4ff_device{
 };
 
 void lg4ff_init_slots(struct lg4ff_device *device);
-int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log);
+int lg4ff_upload_effect(struct lg4ff_device *device, struct ff_effect *effect, struct ff_effect *old, bool log, bool play_on_upload);
 int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value, bool log);
 int lg4ff_timer(struct lg4ff_device *device);
 
