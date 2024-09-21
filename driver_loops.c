@@ -105,10 +105,10 @@ static void uinput_g29_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_G29_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_G29_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace G29");
+	sprintf(usetup.name, "userspace G29 %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -156,10 +156,10 @@ static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_G27_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_G27_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace G27");
+	sprintf(usetup.name, "userspace G27 %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -207,10 +207,10 @@ static void uinput_g25_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_G25_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_G25_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace G25");
+	sprintf(usetup.name, "userspace G25 %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -258,10 +258,10 @@ static void uinput_dfgt_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_DFGT_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_DFGT_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace Driving Force GT");
+	sprintf(usetup.name, "userspace Driving Force GT %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -309,10 +309,10 @@ static void uinput_dfp_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_DFP_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_DFP_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace Driving Force Pro");
+	sprintf(usetup.name, "userspace Driving Force Pro %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);
@@ -360,10 +360,10 @@ static void uinput_dfex_setup(int uinput_fd, struct loop_context *context){
 
 	struct uinput_setup usetup = {0};
 	usetup.id.bustype = BUS_USB;
-	usetup.id.vendor = USB_VENDOR_ID_LOGITECH;
-	usetup.id.product = USB_DEVICE_ID_LOGITECH_WHEEL;
+	usetup.id.vendor = context->vendor_id == 0? USB_VENDOR_ID_LOGITECH: context->vendor_id;
+	usetup.id.product = context->product_id == 0? USB_DEVICE_ID_LOGITECH_WHEEL: context->product_id;
 	usetup.ff_effects_max = LG4FF_MAX_EFFECTS;
-	strcpy(usetup.name, "userspace Driving Force EX");
+	sprintf(usetup.name, "userspace Driving Force EX %04x:%04x", usetup.id.vendor, usetup.id.product);
 
 	ioctl(uinput_fd, UI_DEV_SETUP, &usetup);
 	ioctl(uinput_fd, UI_DEV_CREATE);

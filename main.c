@@ -53,6 +53,8 @@ static void print_help(char *binary_name){
 	STDOUT("    [-u]\n");
 	STDOUT("  log effects\n");
 	STDOUT("    [-v]\n");
+	STDOUT("  spoof product and vendor id, in hex, eg. 1234:abcd, defaults to 0000:0000 for no spoofing\n");
+	STDOUT("    [-S 0000:0000]\n");
 }
 
 enum operation_mode{
@@ -114,7 +116,9 @@ static int start_driver(
 		bool hide_effects,
 		int combine_pedals,
 		bool play_on_upload,
-		bool log_effects
+		bool log_effects,
+		int vendor_id,
+		int product_id
 ){
 	list_devices(hidraw_devices, wheels);
 	STDOUT("starting driver on wheel %d\n", wheel_num);
@@ -128,6 +132,7 @@ static int start_driver(
 	STDOUT("combine pedals: %d\n", combine_pedals);
 	STDOUT("play effect on upload: %s\n", play_on_upload? "true" : "false");
 	STDOUT("log effects: %s\n", log_effects? "true" : "false");
+	STDOUT("spoof id: %04x:%04x\n", vendor_id, product_id);
 
 	struct loop_context lc = {
 		.device = hidraw_devices[wheel_num - 1],
@@ -140,7 +145,9 @@ static int start_driver(
 		.hide_effects = hide_effects,
 		.combine_pedals = combine_pedals,
 		.play_on_upload = play_on_upload,
-		.log_effects = log_effects
+		.log_effects = log_effects,
+		.vendor_id = vendor_id,
+		.product_id = product_id
 	};
 	start_loops(lc);
 
@@ -170,8 +177,10 @@ int main(int argc, char** argv){
 	int combine_pedals = 0;
 	bool play_on_upload = false;
 	bool log_effects = false;
+	int vendor_id = 0;
+	int product_id = 0;
 
-	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:uv")) != -1){
+	while ((opt = getopt(argc, argv, "lhm:n:wg:a:s:d:f:r:Hc:uvS:")) != -1){
 		#define CLAMP_ARG_VALUE(name, field, min, max){ \
 			if(field > max){ \
 				field = max; \
@@ -249,6 +258,9 @@ int main(int argc, char** argv){
 			case 'v':
 				log_effects = true;
 				break;
+			case 'S':
+				sscanf(optarg, "%llx:%llx", &vendor_id, &product_id);
+				break;
 			default:
 				print_help(argv[0]);
 				return 0;
@@ -274,7 +286,7 @@ int main(int argc, char** argv){
 			reboot_wheel(hidraw_devices, wheels_found, device_number, wmode);
 			return 0;
 		case OPERATION_MODE_DRIVER:
-			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals, play_on_upload, log_effects);
+			start_driver(hidraw_devices, wheels_found, device_number, gain, auto_center, spring_level, damper_level, friction_level, range, hide_effects, combine_pedals, play_on_upload, log_effects, vendor_id, product_id);
 			return 0;
 		default:
 			print_help(argv[0]);

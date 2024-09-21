@@ -17,6 +17,8 @@ struct loop_context{
 	int combine_pedals;
 	bool play_on_upload;
 	bool log_effects;
+	int vendor_id;
+	int product_id;
 };
 
 void start_loops(struct loop_context context);

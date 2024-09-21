@@ -115,6 +115,8 @@ start driver on wheel:
     [-u]
   log effects
     [-v]
+  spoof product and vendor id, in hex, eg. 1234:abcd, defaults to 0000:0000 for no spoofing
+    [-S 0000:0000]
 ```
 
 ### Usage Examples
