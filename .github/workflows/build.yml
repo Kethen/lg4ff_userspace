@@ -26,7 +26,7 @@ jobs:
         bash build_podman.sh
 
     - name: Push package artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lg4ff_userspace_${{ env.sha_name }}
         path: |
