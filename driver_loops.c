@@ -115,8 +115,9 @@ static void uinput_g29_setup(int uinput_fd, struct loop_context *context){
 }
 
 static void uinput_g27_setup(int uinput_fd, struct loop_context *context){
-	// 22 buttons numerated from 1 to 22 on hid
-	for(int i = 0;i < 22; i++){
+	// 22 buttons numerated from 1 to 22 on hid, plus shifter_r on bit 80
+	// ref https://github.com/sonik-br/lgff_wheel_adapter/blob/d97f7823154818e1b3edff6d51498a122c302728/pico_lgff_wheel_adapter/reports.h#L265-L310
+	for(int i = 0;i < 23; i++){
 		int key = BTN_TRIGGER_HAPPY + i;
 		SETUP_KEY(uinput_fd, key);
 	}
@@ -468,7 +469,7 @@ static void uinput_g29_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 	memcpy(last_report_buf, report_buf, 12);
 }
 
-static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf, struct loop_context *context){
+static void uinput_g25_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_report_buf, struct loop_context *context, bool is_g27){
 	// 11 bytes report
 	// first 4 bits are for the hat
 	// second 22 bits are the buttons (on g25, 19 bits of buttons, 3 bits of vendor)
@@ -529,15 +530,26 @@ static void uinput_g27_emit(int uinput_fd, uint8_t *report_buf, uint8_t *last_re
 				break;
 		}
 	}
-	for(int i = 0;i < 22; i++){
+
+	const int num_buttons = is_g27 ? 22 : 19;
+	for(int i = 0;i < num_buttons; i++){
 		int key = BTN_TRIGGER_HAPPY + i;
 		int bit_num = i + 4;
-		bool button_on = get_bit(report_buf, bit_num, 12);
-		bool button_was_on = get_bit(last_report_buf, bit_num, 12);
+		bool button_on = get_bit(report_buf, bit_num, 11);
+		bool button_was_on = get_bit(last_report_buf, bit_num, 11);
 		if(button_on != button_was_on){
 			EMIT_INPUT(uinput_fd, EV_KEY, key, button_on? 1: 0);
 		}
 	}
+
+	if(is_g27){
+		bool button_on = get_bit(report_buf, 80, 11);
+		bool button_was_on = get_bit(last_report_buf, 80, 11);
+		if(button_on != button_was_on){
+			EMIT_INPUT(uinput_fd, EV_KEY, BTN_TRIGGER_HAPPY + num_buttons, button_on? 1: 0);
+		}
+	}
+
 	if(context->combine_pedals == 1){
 		report_buf[5] = ((uint32_t)0xFF + report_buf[5] - report_buf[6]) >> 1;
 		report_buf[6] = 0x7F;
@@ -887,7 +899,7 @@ static void *input_loop(void *arg){
 					exit(1);
 				}
 				pthread_mutex_lock(loop_context->uinput_write_mutex);
-				uinput_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context);
+				uinput_g25_g27_emit(loop_context->uinput_fd, report_buf, last_report_buf, &loop_context->context, loop_context->context.device.product_id == USB_DEVICE_ID_LOGITECH_G27_WHEEL);
 				pthread_mutex_unlock(loop_context->uinput_write_mutex);
 				break;
 			}
