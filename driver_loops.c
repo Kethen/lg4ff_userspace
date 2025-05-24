@@ -1011,6 +1011,9 @@ static void *uinput_poll_loop(void *arg){
 			case EV_FF:{
 				switch(e.code){
 					case FF_AUTOCENTER:{
+						if(loop_context->context.auto_center == -1){
+							break;
+						}
 						CLAMP_VALUE(e.value, 0, 65535);
 						pthread_mutex_lock(&loop_context->device_mutex);
 						set_auto_center(loop_context->write_hid_device, loop_context->context.device.product_id, e.value);
@@ -1108,7 +1111,7 @@ void start_loops(struct loop_context context){
 	}
 
 	set_range(device, context.device.product_id, context.range);
-	set_auto_center(device, context.device.product_id, context.auto_center);
+	set_auto_center(device, context.device.product_id, context.auto_center == -1 ? 0 : context.auto_center);
 
 	struct input_loop_context ilc = {
 		.context = context,

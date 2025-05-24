@@ -37,7 +37,7 @@ static void print_help(char *binary_name){
 	STDOUT("    [-n <device number in -l>]\n");
 	STDOUT("  gain, independent of application set gain, defaults to 65535:\n");
 	STDOUT("    [-g <gain, 0-65535>]\n");
-	STDOUT("  auto center gain, can be overriden by application, defaults to 0:\n")
+	STDOUT("  auto center gain, can be overriden by application, defaults to 0, -1 to force disable:\n")
 	STDOUT("    [-a <auto center, 0-65535>]\n");
 	STDOUT("  spring effect level, defaults to 30:\n")
 	STDOUT("    [-s <spring level, 0-100>]\n");
@@ -228,7 +228,7 @@ int main(int argc, char** argv){
 				break;
 			case 'a':
 				auto_center = atoi(optarg);
-				CLAMP_ARG_VALUE("auto center", auto_center, 0, 65535);
+				CLAMP_ARG_VALUE("auto center", auto_center, -1, 65535);
 				break;
 			case 's':
 				spring_level = atoi(optarg);
