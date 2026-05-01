@@ -1012,7 +1012,7 @@ static void *uinput_poll_loop(void *arg){
 				switch(e.code){
 					case FF_AUTOCENTER:{
 						if(loop_context->context.auto_center == -1){
-							STDOUT("application wants to set autocenter to %d but was rejected\n", e.value);
+							//STDOUT("application wants to set autocenter to %d but was rejected\n", e.value);
 							break;
 						}
 						CLAMP_VALUE(e.value, 0, 65535);
